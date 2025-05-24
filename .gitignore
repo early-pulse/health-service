@@ -42,9 +42,8 @@ bin/
 !/src/main//bin/
 !/src/test//bin/
 
-/health-service/src/main/resources/application.yaml
-/healthwservice/src/main/resources/application.yaml
-application.yaml
+src/main/resources/application.properties
+src/main/resources/credentials.json
 
 ### IntelliJ IDEA ###
 .idea
