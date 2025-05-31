@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: health-service
+    env: java
+    buildCommand: ./gradlew build
+    startCommand: java -jar build/libs/healthservice-0.0.1-SNAPSHOT.jar
+    envVars:
+      - key: MONGODB_URI
+        sync: false
+      - key: GOOGLE_CLIENT_ID
+        sync: false
+      - key: GOOGLE_CLIENT_SECRET
+        sync: false
+      - key: GOOGLE_CREDENTIALS_JSON
+        sync: false
+      - key: GOOGLE_CREDENTIALS_PATH
+        value: /tmp/google-credentials.json
+      - key: GOOGLE_APPLICATION_NAME
+        value: early-pulse
+      - key: GOOGLE_MAPS_API_KEY
+        sync: false
+      - key: SERVER_PORT
+        value: 8080
+      - key: SERVER_CONTEXT_PATH
+        value: /api 
