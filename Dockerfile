@@ -33,7 +33,17 @@ EXPOSE 8080
 ENV SPRING_PROFILES_ACTIVE=prod \
     SERVER_PORT=8080 \
     SERVER_CONTEXT_PATH=/api \
-    JAVA_OPTS="-Xmx512m -Xms256m"
+    JAVA_OPTS="-Xmx512m -Xms256m" \
+    MONGODB_URI="mongodb+srv://your-mongodb-uri"
 
-# Run the application
-CMD ["sh", "-c", "ls -la build/libs/ && java -jar build/libs/healthservice-0.0.1-SNAPSHOT.jar"] 
+# Run the application with environment variable debugging
+CMD ["sh", "-c", "echo 'Environment Variables:' && \
+    echo 'MONGODB_URI: ' $MONGODB_URI && \
+    echo 'SPRING_PROFILES_ACTIVE: ' $SPRING_PROFILES_ACTIVE && \
+    echo 'SERVER_PORT: ' $SERVER_PORT && \
+    echo 'SERVER_CONTEXT_PATH: ' $SERVER_CONTEXT_PATH && \
+    echo 'JAVA_OPTS: ' $JAVA_OPTS && \
+    echo 'Contents of build/libs:' && \
+    ls -la build/libs/ && \
+    echo 'Starting application...' && \
+    java -jar build/libs/healthservice-0.0.1-SNAPSHOT.jar"] 
