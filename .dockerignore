@@ -15,4 +15,7 @@ README.md
 render.yaml
 system.properties
 credentials.json
-*.log 
+*.log
+# Don't ignore gradle wrapper files
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties 

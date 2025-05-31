@@ -4,11 +4,18 @@ FROM eclipse-temurin:21-jdk-alpine
 # Set working directory
 WORKDIR /app
 
+# Install necessary packages
+RUN apk add --no-cache bash
+
 # Copy Gradle files
 COPY gradlew .
-COPY gradle gradle
 COPY build.gradle .
 COPY settings.gradle .
+
+# Create gradle directory and download wrapper
+RUN mkdir -p gradle/wrapper && \
+    wget -O gradle/wrapper/gradle-wrapper.jar https://raw.githubusercontent.com/gradle/gradle/v8.5.0/gradle/wrapper/gradle-wrapper.jar && \
+    wget -O gradle/wrapper/gradle-wrapper.properties https://raw.githubusercontent.com/gradle/gradle/v8.5.0/gradle/wrapper/gradle-wrapper.properties
 
 # Make gradlew executable
 RUN chmod +x ./gradlew
