@@ -19,7 +19,8 @@ COPY . .
 RUN chmod +x ./gradlew
 
 # Build the application
-RUN ./gradlew build -x test
+RUN ./gradlew clean build -x test && \
+    ls -la build/libs/
 
 # Create directory for credentials and set permissions
 RUN mkdir -p /tmp && \
@@ -35,4 +36,4 @@ ENV SPRING_PROFILES_ACTIVE=prod \
     JAVA_OPTS="-Xmx512m -Xms256m"
 
 # Run the application
-CMD ["java", "-jar", "build/libs/health-service-0.0.1-SNAPSHOT.jar"] 
+CMD ["sh", "-c", "ls -la build/libs/ && java -jar build/libs/healthservice-0.0.1-SNAPSHOT.jar"] 
