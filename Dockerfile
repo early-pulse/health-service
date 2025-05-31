@@ -10,8 +10,9 @@ WORKDIR /app
 # Copy source code
 COPY . .
 
-# Build the application
-RUN ./gradlew clean build -x test
+# Make gradlew executable and build the application
+RUN chmod +x ./gradlew && \
+    ./gradlew clean build -x test
 
 # Create directory for credentials
 RUN mkdir -p /tmp
