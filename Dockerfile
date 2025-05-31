@@ -12,13 +12,14 @@ RUN mkdir -p gradle/wrapper && \
     wget -O gradle/wrapper/gradle-wrapper.jar https://raw.githubusercontent.com/gradle/gradle/v8.5.0/gradle/wrapper/gradle-wrapper.jar && \
     wget -O gradle/wrapper/gradle-wrapper.properties https://raw.githubusercontent.com/gradle/gradle/v8.5.0/gradle/wrapper/gradle-wrapper.properties && \
     wget -O gradlew https://raw.githubusercontent.com/gradle/gradle/v8.5.0/gradlew && \
-    chmod +x gradlew
+    chmod +x gradlew && \
+    chmod +x ./gradlew
 
 # Copy source code
 COPY . .
 
 # Build the application
-RUN ./gradlew clean build -x test
+RUN chmod +x ./gradlew && ./gradlew clean build -x test
 
 # Create directory for credentials
 RUN mkdir -p /tmp && chmod 777 /tmp
