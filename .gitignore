@@ -1,12 +1,9 @@
 HELP.md
 .gradle
 build/
-gradle/
-.idea/
-
 !gradle/wrapper/gradle-wrapper.jar
-!/src/main//build/
-!/src/test//build/
+!**/src/main/**/build/
+!**/src/test/**/build/
 
 ### STS ###
 .apt_generated
@@ -17,8 +14,8 @@ gradle/
 .springBeans
 .sts4-cache
 bin/
-!/src/main//bin/
-!/src/test//bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
 
 ### IntelliJ IDEA ###
 .idea
@@ -26,8 +23,8 @@ bin/
 *.iml
 *.ipr
 out/
-!/src/main//out/
-!/src/test//out/
+!**/src/main/**/out/
+!**/src/test/**/out/
 
 ### NetBeans ###
 /nbproject/private/
@@ -39,24 +36,19 @@ out/
 ### VS Code ###
 .vscode/
 
-### Application Properties and Credentials ###
+### Application Properties ###
 src/main/resources/application.properties
 src/main/resources/application.yaml
-src/main/resources/application-*.yaml
+src/main/resources/application-dev.yaml
+src/main/resources/application-local.yaml
+src/main/resources/application-test.yaml
 src/main/resources/credentials.json
-src/main/resources/*.json
-src/main/resources/*.p12
-src/main/resources/*.key
-src/main/resources/*.crt
-src/main/resources/*.pem
-src/main/resources/truststore.jks
-src/main/resources/keystore.jks
-credentials.json
 
-### Environment Files ###
-.env
-.env.*
-*.env
+### Gradle ###
+gradle/
+!gradle/wrapper/
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
 
 ### Logs ###
 *.log
