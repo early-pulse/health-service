@@ -10,10 +10,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.util.FileCopyUtils;
 
-import java.io.*;
-import java.nio.charset.StandardCharsets;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileWriter;
+import java.io.InputStream;
 import java.util.Collections;
 
 @Configuration
@@ -30,26 +31,8 @@ public class GoogleCalendarConfig {
 
     @Bean
     public Calendar googleCalendar() throws Exception {
-        InputStream credentialsStream;
+        InputStream credentialsStream = getCredentialsStream();
         
-        if (credentialsJson != null && !credentialsJson.isEmpty()) {
-            // Write credentials from environment variable to file
-            File credentialsFile = new File(credentialsFilePath);
-            try (FileWriter writer = new FileWriter(credentialsFile)) {
-                writer.write(cleanJsonString(credentialsJson));
-            }
-            credentialsStream = new FileInputStream(credentialsFile);
-        } else {
-            // Try to read from file
-            File credentialsFile = new File(credentialsFilePath);
-            if (credentialsFile.exists()) {
-                credentialsStream = new FileInputStream(credentialsFile);
-            } else {
-                // Fallback to credentials file in resources
-                credentialsStream = new ClassPathResource("credentials.json").getInputStream();
-            }
-        }
-
         try {
             GoogleCredentials credentials = GoogleCredentials.fromStream(credentialsStream)
                 .createScoped(Collections.singleton(CalendarScopes.CALENDAR));
@@ -68,21 +51,30 @@ public class GoogleCalendarConfig {
         }
     }
 
-    private String cleanJsonString(String json) {
-        // Remove any leading/trailing whitespace
-        json = json.trim();
-        
-        // If the JSON is wrapped in quotes, remove them
-        if (json.startsWith("\"") && json.endsWith("\"")) {
-            json = json.substring(1, json.length() - 1);
+    private InputStream getCredentialsStream() throws Exception {
+        if (credentialsJson != null && !credentialsJson.isEmpty()) {
+            // Write credentials from environment variable to file
+            File credentialsFile = new File(credentialsFilePath);
+            try (FileWriter writer = new FileWriter(credentialsFile)) {
+                writer.write(cleanJsonString(credentialsJson));
+            }
+            return new FileInputStream(credentialsFile);
         }
-        
-        // Replace escaped quotes with actual quotes
-        json = json.replace("\\\"", "\"");
-        
-        // Replace newlines with spaces
-        json = json.replace("\n", " ").replace("\r", "");
-        
-        return json;
+
+        // Try to read from file
+        File credentialsFile = new File(credentialsFilePath);
+        if (credentialsFile.exists()) {
+            return new FileInputStream(credentialsFile);
+        }
+
+        // Fallback to credentials file in resources
+        return new ClassPathResource("credentials.json").getInputStream();
+    }
+
+    private String cleanJsonString(String json) {
+        return json.trim()
+            .replace("\\\"", "\"")
+            .replace("\n", " ")
+            .replace("\r", "");
     }
 }

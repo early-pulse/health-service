@@ -4,11 +4,6 @@ spring:
   data:
     mongodb:
       uri: ${MONGODB_URI}
-      auto-index-creation: true
-      ssl: true
-      ssl-invalid-hostname-allowed: true
-      retry-writes: true
-      auth-source: admin
   # Kafka configuration commented out as we're using Spring events instead
   # kafka:
   #   producer:
@@ -47,10 +42,4 @@ google:
 logging:
   level:
     root: INFO
-    org.springframework.data.mongodb: DEBUG
-    com.example.healthservice: DEBUG
-    com.google.api.client: DEBUG
-    com.google.auth: DEBUG
-    org.springframework.web: DEBUG
-    org.springframework.boot.autoconfigure.data.mongo: DEBUG
-    com.mongodb: DEBUG
+    com.example.healthservice: INFO
