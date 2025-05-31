@@ -43,6 +43,7 @@ src/main/resources/application-dev.yaml
 src/main/resources/application-local.yaml
 src/main/resources/application-test.yaml
 src/main/resources/credentials.json
+credentials.json
 
 ### Gradle ###
 gradle/

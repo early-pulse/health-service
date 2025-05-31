@@ -1,0 +1,56 @@
+spring:
+  application:
+    name: healthservice
+  data:
+    mongodb:
+      uri: ${MONGODB_URI}
+      auto-index-creation: true
+      ssl: true
+      ssl-invalid-hostname-allowed: true
+      retry-writes: true
+      auth-source: admin
+  # Kafka configuration commented out as we're using Spring events instead
+  # kafka:
+  #   producer:
+  #     key-serializer: org.apache.kafka.common.serialization.StringSerializer
+  #     value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+  #   bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS}
+  #   consumer:
+  #     group-id: ${KAFKA_CONSUMER_GROUP_ID}
+  #     auto-offset-reset: earliest
+  #     key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+  #     value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            scope:
+              - email
+              - profile
+
+server:
+  port: ${SERVER_PORT:8080}
+  servlet:
+    context-path: ${SERVER_CONTEXT_PATH:/api}
+
+google:
+  calendar:
+    credentials-file:
+      path: ${GOOGLE_CREDENTIALS_PATH:/tmp/google-credentials.json}
+    application-name: ${GOOGLE_APPLICATION_NAME:early-pulse}
+  maps:
+    api-key: ${GOOGLE_MAPS_API_KEY}
+
+logging:
+  level:
+    root: INFO
+    org.springframework.data.mongodb: DEBUG
+    com.example.healthservice: DEBUG
+    com.google.api.client: DEBUG
+    com.google.auth: DEBUG
+    org.springframework.web: DEBUG
+    org.springframework.boot.autoconfigure.data.mongo: DEBUG
+    com.mongodb: DEBUG
