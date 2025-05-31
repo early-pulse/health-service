@@ -3,7 +3,7 @@ package com.example.healthservice.service.impl;
 import com.example.healthservice.constant.AppConstants;
 import com.example.healthservice.dto.AppointmentDTO;
 import com.example.healthservice.bo.AppointmentRequestBO;
-import com.example.healthservice.kafka.producer.AppointmentEventProducer;
+import com.example.healthservice.event.AppointmentEvent;
 import com.example.healthservice.model.Appointment;
 import com.example.healthservice.enums.AppointmentStatus;
 import com.example.healthservice.repository.AppointmentRepository;
@@ -16,6 +16,7 @@ import com.google.api.services.calendar.model.Event;
 import com.google.api.services.calendar.model.EventDateTime;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Pageable;
@@ -28,7 +29,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     private AppointmentRepository appointmentRepository;
 
     @Autowired
-    private AppointmentEventProducer eventProducer;
+    private ApplicationEventPublisher eventPublisher;
 
     @Autowired
     private com.google.api.services.calendar.Calendar googleCalendar;
@@ -64,7 +65,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         }
 
         AppointmentDTO dto = toDTO(appointment);
-        eventProducer.sendAppointmentEvent(dto);
+        eventPublisher.publishEvent(new AppointmentEvent(this, dto, "CREATED"));
         return dto;
     }
 
@@ -122,7 +123,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         }
 
         AppointmentDTO dto = toDTO(appointment);
-        eventProducer.sendAppointmentEvent(dto);
+        eventPublisher.publishEvent(new AppointmentEvent(this, dto, "UPDATED"));
         return dto;
     }
 
@@ -146,7 +147,7 @@ public class AppointmentServiceImpl implements AppointmentService {
         }
 
         AppointmentDTO dto = toDTO(appointment);
-        eventProducer.sendAppointmentEvent(dto);
+        eventPublisher.publishEvent(new AppointmentEvent(this, dto, "CANCELLED"));
     }
 
     private AppointmentDTO toDTO(Appointment appointment) {

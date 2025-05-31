@@ -1,0 +1,46 @@
+# Git
+.git
+.gitignore
+
+# Gradle
+.gradle
+build/
+!gradle/wrapper/gradle-wrapper.jar
+!gradle/wrapper/gradle-wrapper.properties
+
+# IDE
+.idea
+*.iml
+.vscode
+.project
+.classpath
+.settings
+
+# Logs
+*.log
+logs/
+
+# Environment files
+.env
+.env.*
+*.env
+
+# Test files
+src/test/
+
+# Development configs
+src/main/resources/application-dev.yaml
+src/main/resources/application-local.yaml
+src/main/resources/application-test.yaml
+src/main/resources/application.properties
+src/main/resources/application.yaml
+
+# Credentials
+src/main/resources/credentials.json
+src/main/resources/*.json
+src/main/resources/*.p12
+src/main/resources/*.key
+src/main/resources/*.crt
+src/main/resources/*.pem
+src/main/resources/truststore.jks
+src/main/resources/keystore.jks 

@@ -1,32 +1,33 @@
+/*
 package com.example.healthservice.kafka.producer;
 
-import com.example.healthservice.constant.AppConstants;
-import com.example.healthservice.dto.AppointmentDTO;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.healthservice.event.AppointmentEvent;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.stereotype.Service;
+import org.springframework.kafka.support.SendResult;
+import org.springframework.stereotype.Component;
 
-@Service
+import java.util.concurrent.CompletableFuture;
+
+@Slf4j
+@Component
+@RequiredArgsConstructor
 public class AppointmentEventProducer {
 
-    @Autowired
-    private KafkaTemplate<String, AppointmentDTO> kafkaTemplate;
+    private final KafkaTemplate<String, AppointmentEvent> kafkaTemplate;
+    private static final String TOPIC = "appointment-events";
 
-    /**
-     * Send a message about a newly created appointment.
-     */
-    public void sendAppointmentCreatedEvent(AppointmentDTO appointmentDTO) {
-        kafkaTemplate.send(AppConstants.APPOINTMENT_TOPIC, appointmentDTO);
-    }
-
-    /**
-     * Send a notification event for the appointment (e.g., to trigger email/SMS).
-     */
-    public void sendNotificationEvent(AppointmentDTO appointmentDTO) {
-        kafkaTemplate.send(AppConstants.NOTIFICATION_TOPIC, appointmentDTO);
-    }
-
-    public void sendAppointmentEvent(AppointmentDTO appointment) {
-        kafkaTemplate.send(AppConstants.APPOINTMENT_TOPIC, appointment);
+    public CompletableFuture<SendResult<String, AppointmentEvent>> sendAppointmentEvent(AppointmentEvent event) {
+        log.info("Sending appointment event to Kafka: {}", event);
+        return kafkaTemplate.send(TOPIC, event.getAppointmentId(), event)
+                .whenComplete((result, ex) -> {
+                    if (ex == null) {
+                        log.info("Message sent successfully to Kafka: {}", result.getRecordMetadata());
+                    } else {
+                        log.error("Unable to send message to Kafka: {}", ex.getMessage());
+                    }
+                });
     }
 }
+*/

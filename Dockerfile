@@ -22,13 +22,16 @@ COPY . .
 RUN ./gradlew clean build -x test
 
 # Create directory for credentials
-RUN mkdir -p /tmp
+RUN mkdir -p /tmp && chmod 777 /tmp
 
 # Expose port
 EXPOSE 8080
 
 # Set environment variables
-ENV SPRING_PROFILES_ACTIVE=prod
+ENV SPRING_PROFILES_ACTIVE=prod \
+    SERVER_PORT=8080 \
+    SERVER_CONTEXT_PATH=/api \
+    JAVA_OPTS="-Xmx512m -Xms256m"
 
 # Run the application
 CMD ["java", "-jar", "build/libs/healthservice-0.0.1-SNAPSHOT.jar"] 
