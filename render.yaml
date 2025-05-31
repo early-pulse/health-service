@@ -1,9 +1,7 @@
 services:
   - type: web
     name: health-service
-    runtime: java
-    buildCommand: ./gradlew clean build -x test
-    startCommand: java -jar build/libs/healthservice-0.0.1-SNAPSHOT.jar
+    dockerfilePath: ./Dockerfile
     envVars:
       - key: MONGODB_URI
         sync: false
