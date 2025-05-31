@@ -83,3 +83,6 @@ out/
 
 ### VS Code ###
 .vscode/
+
+# Production configuration
+src/main/resources/application-prod.yaml

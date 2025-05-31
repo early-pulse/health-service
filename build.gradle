@@ -33,6 +33,7 @@ dependencies {
 	implementation 'com.fasterxml.jackson.core:jackson-databind'
 	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
+	implementation 'jakarta.annotation:jakarta.annotation-api'
 
 	// ✅ Google Calendar working dependencies
 	implementation 'com.google.apis:google-api-services-calendar:v3-rev411-1.25.0'

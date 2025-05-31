@@ -5,7 +5,6 @@ import com.example.healthservice.dto.LabResponse;
 import com.example.healthservice.service.LabService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
-//import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
