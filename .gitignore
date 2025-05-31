@@ -20,66 +20,44 @@ bin/
 !/src/main//bin/
 !/src/test//bin/
 
-HELP.md
-.gradle
-build/
-gradle/
-.idea/
+### IntelliJ IDEA ###
+.idea
+*.iws
+*.iml
+*.ipr
+out/
+!/src/main//out/
+!/src/test//out/
 
-!gradle/wrapper/gradle-wrapper.jar
-!/src/main//build/
-!/src/test//build/
+### NetBeans ###
+/nbproject/private/
+/nbbuild/
+/dist/
+/nbdist/
+/.nb-gradle/
 
-### STS ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-bin/
-!/src/main//bin/
-!/src/test//bin/
+### VS Code ###
+.vscode/
 
+### Application Properties and Credentials ###
 src/main/resources/application.properties
+src/main/resources/application.yaml
+src/main/resources/application-*.yaml
 src/main/resources/credentials.json
+src/main/resources/*.json
+src/main/resources/*.p12
+src/main/resources/*.key
+src/main/resources/*.crt
+src/main/resources/*.pem
+src/main/resources/truststore.jks
+src/main/resources/keystore.jks
+credentials.json
 
-### IntelliJ IDEA ###
-.idea
-*.iws
-*.iml
-*.ipr
-out/
-!/src/main//out/
-!/src/test//out/
+### Environment Files ###
+.env
+.env.*
+*.env
 
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-
-### VS Code ###
-.vscode/
-application.yaml
-
-### IntelliJ IDEA ###
-.idea
-*.iws
-*.iml
-*.ipr
-out/
-!/src/main//out/
-!/src/test//out/
-
-### NetBeans ###
-/nbproject/private/
-/nbbuild/
-/dist/
-/nbdist/
-/.nb-gradle/
-
-### VS Code ###
-.vscode/
+### Logs ###
+*.log
+logs/

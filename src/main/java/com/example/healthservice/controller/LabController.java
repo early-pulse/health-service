@@ -12,7 +12,7 @@ import java.io.IOException;
 import java.util.List;
 
 @RestController
-@RequestMapping("/labs")
+@RequestMapping("/api/labs")
 @RequiredArgsConstructor
 public class LabController {
 
