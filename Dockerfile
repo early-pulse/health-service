@@ -7,13 +7,12 @@ RUN apk add --no-cache bash wget
 # Set working directory
 WORKDIR /app
 
-# Copy Gradle wrapper files first
-COPY gradle/wrapper/gradle-wrapper.jar gradle/wrapper/
-COPY gradle/wrapper/gradle-wrapper.properties gradle/wrapper/
-COPY gradlew .
-
-# Make gradlew executable
-RUN chmod +x ./gradlew
+# Download and set up Gradle wrapper
+RUN mkdir -p gradle/wrapper && \
+    wget -O gradle/wrapper/gradle-wrapper.jar https://raw.githubusercontent.com/gradle/gradle/v8.5.0/gradle/wrapper/gradle-wrapper.jar && \
+    wget -O gradle/wrapper/gradle-wrapper.properties https://raw.githubusercontent.com/gradle/gradle/v8.5.0/gradle/wrapper/gradle-wrapper.properties && \
+    wget -O gradlew https://raw.githubusercontent.com/gradle/gradle/v8.5.0/gradlew && \
+    chmod +x gradlew
 
 # Copy source code
 COPY . .
