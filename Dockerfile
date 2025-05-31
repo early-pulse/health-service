@@ -5,7 +5,7 @@ FROM eclipse-temurin:21-jdk-alpine
 WORKDIR /app
 
 # Install necessary packages
-RUN apk add --no-cache bash
+RUN apk add --no-cache bash wget
 
 # Copy Gradle files
 COPY gradlew .
@@ -26,8 +26,16 @@ COPY src src
 # Build the application
 RUN ./gradlew clean build -x test
 
+# Create directory for credentials
+RUN mkdir -p /tmp
+
 # Expose the port
 EXPOSE 8080
+
+# Set environment variables
+ENV SPRING_PROFILES_ACTIVE=prod
+ENV SERVER_PORT=8080
+ENV SERVER_CONTEXT_PATH=/api
 
 # Run the application
 CMD ["java", "-jar", "build/libs/healthservice-0.0.1-SNAPSHOT.jar"] 

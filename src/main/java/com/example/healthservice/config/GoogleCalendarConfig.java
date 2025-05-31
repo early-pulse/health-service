@@ -12,6 +12,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.util.Collections;
 
@@ -26,17 +28,30 @@ public class GoogleCalendarConfig {
 
     @Bean
     public Calendar googleCalendar() throws Exception {
-        InputStream credentialsStream = new ClassPathResource(credentialsFilePath).getInputStream();
+        File credentialsFile = new File(credentialsFilePath);
+        InputStream credentialsStream;
+        
+        if (credentialsFile.exists()) {
+            credentialsStream = new FileInputStream(credentialsFile);
+        } else {
+            credentialsStream = new ClassPathResource("credentials.json").getInputStream();
+        }
 
-        GoogleCredentials credentials = GoogleCredentials.fromStream(credentialsStream)
-            .createScoped(Collections.singleton(CalendarScopes.CALENDAR));
-        credentials.refreshIfExpired();
+        try {
+            GoogleCredentials credentials = GoogleCredentials.fromStream(credentialsStream)
+                .createScoped(Collections.singleton(CalendarScopes.CALENDAR));
+            credentials.refreshIfExpired();
 
-        return new Calendar.Builder(
-            GoogleNetHttpTransport.newTrustedTransport(),
-            GsonFactory.getDefaultInstance(),
-            new HttpCredentialsAdapter(credentials))
-            .setApplicationName(applicationName)
-            .build();
+            return new Calendar.Builder(
+                GoogleNetHttpTransport.newTrustedTransport(),
+                GsonFactory.getDefaultInstance(),
+                new HttpCredentialsAdapter(credentials))
+                .setApplicationName(applicationName)
+                .build();
+        } finally {
+            if (credentialsStream != null) {
+                credentialsStream.close();
+            }
+        }
     }
 }
