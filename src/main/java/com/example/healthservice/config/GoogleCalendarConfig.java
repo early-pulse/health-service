@@ -6,15 +6,14 @@ import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.CalendarScopes;
 import com.google.auth.http.HttpCredentialsAdapter;
 import com.google.auth.oauth2.GoogleCredentials;
-
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.util.FileCopyUtils;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 
 @Configuration
@@ -26,15 +25,29 @@ public class GoogleCalendarConfig {
     @Value("${google.calendar.application-name}")
     private String applicationName;
 
+    @Value("${GOOGLE_CREDENTIALS_JSON:}")
+    private String credentialsJson;
+
     @Bean
     public Calendar googleCalendar() throws Exception {
-        File credentialsFile = new File(credentialsFilePath);
         InputStream credentialsStream;
         
-        if (credentialsFile.exists()) {
+        if (credentialsJson != null && !credentialsJson.isEmpty()) {
+            // Write credentials from environment variable to file
+            File credentialsFile = new File(credentialsFilePath);
+            try (FileWriter writer = new FileWriter(credentialsFile)) {
+                writer.write(cleanJsonString(credentialsJson));
+            }
             credentialsStream = new FileInputStream(credentialsFile);
         } else {
-            credentialsStream = new ClassPathResource("credentials.json").getInputStream();
+            // Try to read from file
+            File credentialsFile = new File(credentialsFilePath);
+            if (credentialsFile.exists()) {
+                credentialsStream = new FileInputStream(credentialsFile);
+            } else {
+                // Fallback to credentials file in resources
+                credentialsStream = new ClassPathResource("credentials.json").getInputStream();
+            }
         }
 
         try {
@@ -53,5 +66,23 @@ public class GoogleCalendarConfig {
                 credentialsStream.close();
             }
         }
+    }
+
+    private String cleanJsonString(String json) {
+        // Remove any leading/trailing whitespace
+        json = json.trim();
+        
+        // If the JSON is wrapped in quotes, remove them
+        if (json.startsWith("\"") && json.endsWith("\"")) {
+            json = json.substring(1, json.length() - 1);
+        }
+        
+        // Replace escaped quotes with actual quotes
+        json = json.replace("\\\"", "\"");
+        
+        // Replace newlines with spaces
+        json = json.replace("\n", " ").replace("\r", "");
+        
+        return json;
     }
 }
