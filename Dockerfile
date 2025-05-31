@@ -24,12 +24,8 @@ RUN chmod +x ./gradlew && ./gradlew clean build -x test
 # Create directory for credentials
 RUN mkdir -p /tmp && chmod 777 /tmp
 
-# Expose port
-EXPOSE 8080
-
 # Set environment variables
 ENV SPRING_PROFILES_ACTIVE=prod \
-    SERVER_PORT=8080 \
     SERVER_CONTEXT_PATH=/api \
     JAVA_OPTS="-Xmx512m -Xms256m"
 
