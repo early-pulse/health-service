@@ -52,6 +52,28 @@ public class AppointmentController {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
+    // Get appointments by user ID
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<Page<AppointmentDTO>> getAppointmentsByUserId(
+        @PathVariable String userId,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size) {
+        Page<AppointmentDTO> result = appointmentService.getAllAppointments(
+            userId, null, PageRequest.of(page, size));
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
+    // Get appointments by doctor ID
+    @GetMapping("/doctor/{doctorId}")
+    public ResponseEntity<Page<AppointmentDTO>> getAppointmentsByDoctorId(
+        @PathVariable String doctorId,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size) {
+        Page<AppointmentDTO> result = appointmentService.getAllAppointments(
+            null, doctorId, PageRequest.of(page, size));
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
     // Update appointment
     @PutMapping("/{id}")
     public ResponseEntity<AppointmentDTO> updateAppointment(
