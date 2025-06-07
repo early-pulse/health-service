@@ -32,7 +32,7 @@ public class GoogleCalendarConfig {
     @Bean
     public Calendar googleCalendar() throws Exception {
         InputStream credentialsStream = getCredentialsStream();
-        
+
         try {
             GoogleCredentials credentials = GoogleCredentials.fromStream(credentialsStream)
                 .createScoped(Collections.singleton(CalendarScopes.CALENDAR));

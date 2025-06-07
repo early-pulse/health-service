@@ -1,5 +1,7 @@
 package com.example.healthservice.config;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.index.GeoSpatialIndexType;
@@ -23,6 +25,7 @@ import java.util.List;
 @Configuration
 @EnableMongoRepositories(basePackages = "com.example.healthservice.repository")
 public class MongoConfig implements ApplicationListener<ContextRefreshedEvent> {
+    private static final Logger logger = LoggerFactory.getLogger(MongoConfig.class);
 
     private final MongoTemplate mongoTemplate;
     private final MongoMappingContext mongoMappingContext;
@@ -30,34 +33,51 @@ public class MongoConfig implements ApplicationListener<ContextRefreshedEvent> {
     public MongoConfig(MongoTemplate mongoTemplate, MongoMappingContext mongoMappingContext) {
         this.mongoTemplate = mongoTemplate;
         this.mongoMappingContext = mongoMappingContext;
+        logger.info("MongoConfig initialized with MongoTemplate and MongoMappingContext");
     }
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
-        createIndexes();
+        logger.info("Starting MongoDB index initialization");
+        try {
+            createIndexes();
+            logger.info("MongoDB index initialization completed successfully");
+        } catch (Exception e) {
+            logger.error("Failed to initialize MongoDB indexes", e);
+            throw e;
+        }
     }
 
     private void createIndexes() {
+        logger.debug("Creating indexes for all persistent entities");
         // Get all persistent entities
         for (MongoPersistentEntity<?> entity : mongoMappingContext.getPersistentEntities()) {
             Class<?> type = entity.getType();
             if (type.isAnnotationPresent(Document.class)) {
-                IndexOperations indexOps = mongoTemplate.indexOps(type);
-                IndexResolver resolver = new MongoPersistentEntityIndexResolver(mongoMappingContext);
-                resolver.resolveIndexFor(type).forEach(indexOps::ensureIndex);
+                logger.debug("Creating indexes for collection: {}", type.getSimpleName());
+                try {
+                    IndexOperations indexOps = mongoTemplate.indexOps(type);
+                    IndexResolver resolver = new MongoPersistentEntityIndexResolver(mongoMappingContext);
+                    resolver.resolveIndexFor(type).forEach(indexOps::ensureIndex);
+                    logger.info("Successfully created indexes for collection: {}", type.getSimpleName());
+                } catch (Exception e) {
+                    logger.error("Failed to create indexes for collection: {}", type.getSimpleName(), e);
+                }
             }
         }
 
         // Explicitly create geospatial indexes for collections that need them
+        logger.debug("Creating geospatial indexes for specific collections");
         createGeoSpatialIndex("bloodBanks", "location");
         createGeoSpatialIndex("labs", "location");
     }
 
     private void createGeoSpatialIndex(String collectionName, String fieldName) {
+        logger.debug("Creating geospatial index for {}.{}", collectionName, fieldName);
         try {
             IndexOperations indexOps = mongoTemplate.indexOps(collectionName);
             List<IndexInfo> existingIndexes = indexOps.getIndexInfo();
-            
+
             // Check if a geospatial index already exists
             boolean geoSpatialIndexExists = existingIndexes.stream()
                 .anyMatch(index -> index.getIndexFields().stream()
@@ -69,10 +89,12 @@ public class MongoConfig implements ApplicationListener<ContextRefreshedEvent> {
                     .named(fieldName + "_2dsphere")
                     .sparse();
                 indexOps.ensureIndex(indexDefinition);
+                logger.info("Successfully created geospatial index for {}.{}", collectionName, fieldName);
+            } else {
+                logger.debug("Geospatial index already exists for {}.{}", collectionName, fieldName);
             }
         } catch (Exception e) {
-            // Log the error but don't stop the application
-            System.err.println("Error creating geospatial index for " + collectionName + "." + fieldName + ": " + e.getMessage());
+            logger.error("Failed to create geospatial index for {}.{}: {}", collectionName, fieldName, e.getMessage());
         }
     }
 } 
