@@ -3,14 +3,10 @@ package com.example.healthservice.service.impl;
 import com.example.healthservice.dto.NominatimLocation;
 import com.example.healthservice.service.GeoCodingService;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.api.client.http.HttpHeaders;
 import com.google.common.util.concurrent.RateLimiter;
 
-import org.apache.http.HttpEntity;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
-import org.springframework.http.HttpMethod;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.web.util.UriUtils;
