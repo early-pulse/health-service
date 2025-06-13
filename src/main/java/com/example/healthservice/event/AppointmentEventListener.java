@@ -1,53 +1,57 @@
 package com.example.healthservice.event;
 
-import com.example.healthservice.dto.AppointmentDTO;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.example.healthservice.model.Appointment;
+import com.example.healthservice.service.EmailService;
+import com.example.healthservice.service.GoogleCalendarService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Component;
 
+@Slf4j
 @Component
+@RequiredArgsConstructor
 public class AppointmentEventListener {
-    private static final Logger logger = LoggerFactory.getLogger(AppointmentEventListener.class);
+
+    private final EmailService emailService;
+    private final GoogleCalendarService googleCalendarService;
 
     @Async
     @EventListener
-    public void handleAppointmentEvent(AppointmentEvent event) {
-        AppointmentDTO appointment = event.getAppointment();
-        String eventType = event.getEventType();
-        
-        logger.info("Processing appointment event: {} for appointment: {}", eventType, appointment.getId());
-        
-        // Here you can add your notification logic
-        // For example, sending emails, SMS, or other notifications
-        switch (eventType) {
-            case "CREATED":
-                sendAppointmentCreatedNotification(appointment);
-                break;
-            case "UPDATED":
-                sendAppointmentUpdatedNotification(appointment);
-                break;
-            case "CANCELLED":
-                sendAppointmentCancelledNotification(appointment);
-                break;
-            default:
-                logger.warn("Unknown event type: {}", eventType);
+    public void handleAppointmentCreatedEvent(AppointmentCreatedEvent event) {
+        try {
+            Appointment appointment = event.getAppointment();
+            String calendarLink = googleCalendarService.getEventLink(appointment.getId());
+            emailService.sendAppointmentConfirmation(appointment, calendarLink);
+            log.info("Appointment confirmation emails sent for appointment: {}", appointment.getId());
+        } catch (Exception e) {
+            log.error("Error handling appointment created event", e);
         }
     }
 
-    private void sendAppointmentCreatedNotification(AppointmentDTO appointment) {
-        // Implement your notification logic here
-        logger.info("Sending appointment created notification for appointment: {}", appointment.getId());
+    @Async
+    @EventListener
+    public void handleAppointmentUpdatedEvent(AppointmentUpdatedEvent event) {
+        try {
+            Appointment appointment = event.getAppointment();
+            String calendarLink = googleCalendarService.getEventLink(appointment.getId());
+            emailService.sendAppointmentConfirmation(appointment, calendarLink);
+            log.info("Appointment update emails sent for appointment: {}", appointment.getId());
+        } catch (Exception e) {
+            log.error("Error handling appointment updated event", e);
+        }
     }
 
-    private void sendAppointmentUpdatedNotification(AppointmentDTO appointment) {
-        // Implement your notification logic here
-        logger.info("Sending appointment updated notification for appointment: {}", appointment.getId());
-    }
-
-    private void sendAppointmentCancelledNotification(AppointmentDTO appointment) {
-        // Implement your notification logic here
-        logger.info("Sending appointment cancelled notification for appointment: {}", appointment.getId());
+    @Async
+    @EventListener
+    public void handleAppointmentCancelledEvent(AppointmentCancelledEvent event) {
+        try {
+            Appointment appointment = event.getAppointment();
+            emailService.sendAppointmentConfirmation(appointment, null);
+            log.info("Appointment cancellation emails sent for appointment: {}", appointment.getId());
+        } catch (Exception e) {
+            log.error("Error handling appointment cancelled event", e);
+        }
     }
 } 

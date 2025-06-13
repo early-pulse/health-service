@@ -1,7 +1,7 @@
 package com.example.healthservice.service.impl;
 
-import com.example.healthservice.dto.BloodBankRequest;
-import com.example.healthservice.dto.BloodBankResponse;
+import com.example.healthservice.dto.request.BloodBankRequest;
+import com.example.healthservice.dto.response.BloodBankResponse;
 import com.example.healthservice.exception.ResourceNotFoundException;
 import com.example.healthservice.model.BloodBank;
 import com.example.healthservice.repository.BloodBankRepository;

@@ -1,7 +1,7 @@
 package com.example.healthservice.service;
 
-import com.example.healthservice.dto.DoctorRequest;
-import com.example.healthservice.dto.DoctorResponse;
+import com.example.healthservice.dto.request.DoctorRequest;
+import com.example.healthservice.dto.response.DoctorResponse;
 import org.springframework.data.domain.Page;
 
 public interface DoctorService {

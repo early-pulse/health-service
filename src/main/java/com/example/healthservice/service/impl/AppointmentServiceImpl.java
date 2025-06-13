@@ -1,186 +1,150 @@
 package com.example.healthservice.service.impl;
 
-import com.example.healthservice.constant.AppConstants;
-import com.example.healthservice.dto.AppointmentDTO;
-import com.example.healthservice.bo.AppointmentRequestBO;
-import com.example.healthservice.event.AppointmentEvent;
-import com.example.healthservice.model.Appointment;
+import com.example.healthservice.dto.request.AppointmentRequest;
+import com.example.healthservice.dto.response.AppointmentResponse;
 import com.example.healthservice.enums.AppointmentStatus;
-import com.example.healthservice.repository.AppointmentRepository;
+import com.example.healthservice.enums.EntityType;
+import com.example.healthservice.event.AppointmentCancelledEvent;
+import com.example.healthservice.event.AppointmentCreatedEvent;
+import com.example.healthservice.event.AppointmentUpdatedEvent;
 import com.example.healthservice.exception.ResourceNotFoundException;
+import com.example.healthservice.model.Appointment;
+import com.example.healthservice.repository.AppointmentRepository;
 import com.example.healthservice.service.AppointmentService;
-import com.example.healthservice.utils.DateTimeUtil;
-
-import com.google.api.client.util.DateTime;
-import com.google.api.services.calendar.model.Event;
-import com.google.api.services.calendar.model.EventDateTime;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.healthservice.service.EmailService;
+import com.example.healthservice.service.GoogleCalendarService;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Page;
 
+import java.time.LocalDateTime;
+import java.util.Arrays;
+import java.util.List;
+
+@Slf4j
 @Service
+@RequiredArgsConstructor
 public class AppointmentServiceImpl implements AppointmentService {
-    private static final Logger logger = LoggerFactory.getLogger(AppointmentServiceImpl.class);
 
-    @Autowired
-    private AppointmentRepository appointmentRepository;
-
-    @Autowired
-    private ApplicationEventPublisher eventPublisher;
-
-    @Autowired
-    private com.google.api.services.calendar.Calendar googleCalendar;
+    private final AppointmentRepository appointmentRepository;
+    private final ApplicationEventPublisher eventPublisher;
+    private final GoogleCalendarService googleCalendarService;
+    private final EmailService emailService;
 
     @Override
     @Transactional
-    public AppointmentDTO createAppointment(AppointmentRequestBO request) {
-        logger.info("Creating new appointment for user: {} with doctor: {} at time: {}", 
-            request.getUserId(), request.getDoctorId(), request.getAppointmentDateTime());
-        
+    public AppointmentResponse createAppointment(AppointmentRequest request) {
         try {
-            Appointment appointment = new Appointment();
-            appointment.setUserId(request.getUserId());
-            appointment.setDoctorId(request.getDoctorId());
-            appointment.setAppointmentDateTime(request.getAppointmentDateTime());
-            appointment.setStatus(AppointmentStatus.SCHEDULED);
-            appointment = appointmentRepository.save(appointment);
-            logger.debug("Appointment saved to database with ID: {}", appointment.getId());
-
-            Event event = new Event()
-                .setSummary("Appointment for user " + appointment.getUserId())
-                .setDescription("Doctor ID: " + appointment.getDoctorId());
-
-            DateTime startDateTime = DateTimeUtil.toDateTime(appointment.getAppointmentDateTime());
-            DateTime endDateTime = DateTimeUtil.toDateTime(appointment.getAppointmentDateTime().plusHours(1));
-
-            event.setStart(new EventDateTime().setDateTime(startDateTime).setTimeZone("UTC"));
-            event.setEnd(new EventDateTime().setDateTime(endDateTime).setTimeZone("UTC"));
-
-            try {
-                logger.debug("Creating Google Calendar event for appointment: {}", appointment.getId());
-                Event createdEvent = googleCalendar.events()
-                    .insert(AppConstants.CALENDAR_ID, event)
-                    .execute();
-                appointment.setGoogleEventId(createdEvent.getId());
-                appointmentRepository.save(appointment);
-                logger.info("Google Calendar event created successfully with ID: {}", createdEvent.getId());
-            } catch (Exception e) {
-                logger.error("Failed to create Google Calendar event for appointment: {}", appointment.getId(), e);
-                throw new RuntimeException("Failed to create Google Calendar event", e);
+            // Validate test type for lab appointments
+            if (request.getEntityType() == EntityType.LAB && (request.getTestType() == null || request.getTestType().trim().isEmpty())) {
+                throw new IllegalArgumentException("Test type is required for lab appointments");
             }
 
-            AppointmentDTO dto = toDTO(appointment);
-            eventPublisher.publishEvent(new AppointmentEvent(this, dto, "CREATED"));
-            logger.info("Appointment created successfully with ID: {}", appointment.getId());
-            return dto;
+            Appointment appointment = Appointment.builder()
+                    .userId(request.getUserId())
+                    .userEmail(request.getUserEmail())
+                    .userName(request.getUserName())
+                    .userPhone(request.getUserPhone())
+                    .entityId(request.getEntityId())
+                    .entityEmail(request.getEntityEmail())
+                    .entityName(request.getEntityName())
+                    .appointmentDateTime(request.getAppointmentDateTime())
+                    .isLab(request.getEntityType() == EntityType.LAB)
+                    .testType(request.getTestType())
+                    .entityType(request.getEntityType())
+                    .status(AppointmentStatus.SCHEDULED)
+                    .createdAt(LocalDateTime.now())
+                    .updatedAt(LocalDateTime.now())
+                    .deleted(false)
+                    .build();
+
+            appointment = appointmentRepository.save(appointment);
+
+            // Create Google Calendar event
+            googleCalendarService.createEvent(appointment);
+
+            // Publish appointment created event
+            eventPublisher.publishEvent(new AppointmentCreatedEvent(this, appointment));
+
+            return toResponse(appointment);
         } catch (Exception e) {
-            logger.error("Error creating appointment for user: {} with doctor: {}", 
-                request.getUserId(), request.getDoctorId(), e);
+            log.error("Error creating appointment for user: {} with entity: {}", 
+                    request.getUserId(), request.getEntityId(), e);
             throw e;
         }
     }
 
     @Override
-    public AppointmentDTO getAppointmentById(String id) {
-        logger.debug("Fetching appointment with ID: {}", id);
+    public AppointmentResponse getAppointmentById(String id) {
+        log.debug("Fetching appointment with ID: {}", id);
         try {
             Appointment appointment = appointmentRepository.findByIdAndDeletedFalse(id)
                 .orElseThrow(() -> {
-                    logger.warn("Appointment not found with ID: {}", id);
+                    log.warn("Appointment not found with ID: {}", id);
                     return new ResourceNotFoundException("Appointment not found with id " + id);
                 });
-            logger.debug("Appointment found: {}", appointment);
-            return toDTO(appointment);
+            log.debug("Appointment found: {}", appointment);
+            return toResponse(appointment);
         } catch (Exception e) {
-            logger.error("Error fetching appointment with ID: {}", id, e);
+            log.error("Error fetching appointment with ID: {}", id, e);
             throw e;
         }
     }
 
     @Override
-    public Page<AppointmentDTO> getAllAppointments(String userId, String doctorId, Pageable pageable) {
-        logger.debug("Fetching appointments with filters - userId: {}, doctorId: {}, page: {}, size: {}", 
-            userId, doctorId, pageable.getPageNumber(), pageable.getPageSize());
+    public Page<AppointmentResponse> getAllAppointments(String userId, String entityId, Pageable pageable) {
+        log.debug("Fetching appointments with filters - userId: {}, entityId: {}, page: {}, size: {}", 
+            userId, entityId, pageable.getPageNumber(), pageable.getPageSize());
         
         try {
             Page<Appointment> page;
-            if (userId != null && doctorId != null) {
-                logger.debug("Fetching appointments for both user and doctor");
-                page = appointmentRepository.findAllByUserIdAndDoctorIdAndDeletedFalse(userId, doctorId, pageable);
+            if (userId != null && entityId != null) {
+                log.debug("Fetching appointments for both user and entity");
+                page = appointmentRepository.findAllByUserIdAndEntityIdAndDeletedFalse(userId, entityId, pageable);
             } else if (userId != null) {
-                logger.debug("Fetching appointments for user: {}", userId);
+                log.debug("Fetching appointments for user: {}", userId);
                 page = appointmentRepository.findAllByUserIdAndDeletedFalse(userId, pageable);
-            } else if (doctorId != null) {
-                logger.debug("Fetching appointments for doctor: {}", doctorId);
-                page = appointmentRepository.findAllByDoctorIdAndDeletedFalse(doctorId, pageable);
+            } else if (entityId != null) {
+                log.debug("Fetching appointments for entity: {}", entityId);
+                page = appointmentRepository.findAllByEntityIdAndDeletedFalse(entityId, pageable);
             } else {
-                logger.debug("Fetching all appointments");
+                log.debug("Fetching all appointments");
                 page = appointmentRepository.findAllByDeletedFalse(pageable);
             }
             
-            logger.info("Found {} appointments", page.getTotalElements());
-            return page.map(this::toDTO);
+            log.info("Found {} appointments", page.getTotalElements());
+            return page.map(this::toResponse);
         } catch (Exception e) {
-            logger.error("Error fetching appointments with filters - userId: {}, doctorId: {}", 
-                userId, doctorId, e);
+            log.error("Error fetching appointments with filters - userId: {}, entityId: {}", 
+                userId, entityId, e);
             throw e;
         }
     }
 
     @Override
     @Transactional
-    public AppointmentDTO updateAppointment(String id, AppointmentRequestBO request) {
-        logger.info("Updating appointment: {} for user: {} with doctor: {}", 
-            id, request.getUserId(), request.getDoctorId());
-        
+    public AppointmentResponse updateAppointment(String id, AppointmentRequest request) {
         try {
-            Appointment appointment = appointmentRepository.findByIdAndDeletedFalse(id)
-                .orElseThrow(() -> {
-                    logger.warn("Appointment not found with ID: {}", id);
-                    return new ResourceNotFoundException("Appointment not found with id " + id);
-                });
+            Appointment appointment = appointmentRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("Appointment not found with id: " + id));
 
-            appointment.setDoctorId(request.getDoctorId());
             appointment.setAppointmentDateTime(request.getAppointmentDateTime());
+            appointment.setUpdatedAt(LocalDateTime.now());
             appointment = appointmentRepository.save(appointment);
-            logger.debug("Appointment updated in database: {}", appointment);
 
-            if (appointment.getGoogleEventId() != null) {
-                try {
-                    logger.debug("Updating Google Calendar event for appointment: {}", id);
-                    Event event = googleCalendar.events()
-                        .get(AppConstants.CALENDAR_ID, appointment.getGoogleEventId())
-                        .execute();
+            // Update Google Calendar event
+            googleCalendarService.updateEvent(appointment);
 
-                    DateTime startDateTime = DateTimeUtil.toDateTime(appointment.getAppointmentDateTime());
-                    DateTime endDateTime = DateTimeUtil.toDateTime(appointment.getAppointmentDateTime().plusHours(1));
+            // Publish appointment updated event
+            eventPublisher.publishEvent(new AppointmentUpdatedEvent(this, appointment));
 
-                    event.setStart(new EventDateTime().setDateTime(startDateTime).setTimeZone("UTC"));
-                    event.setEnd(new EventDateTime().setDateTime(endDateTime).setTimeZone("UTC"));
-                    event.setSummary("Updated appointment for user " + appointment.getUserId());
-
-                    googleCalendar.events()
-                        .update(AppConstants.CALENDAR_ID, event.getId(), event)
-                        .execute();
-                    logger.info("Google Calendar event updated successfully for appointment: {}", id);
-                } catch (Exception e) {
-                    logger.error("Failed to update Google Calendar event for appointment: {}", id, e);
-                    throw new RuntimeException("Failed to update Google Calendar event", e);
-                }
-            }
-
-            AppointmentDTO dto = toDTO(appointment);
-            eventPublisher.publishEvent(new AppointmentEvent(this, dto, "UPDATED"));
-            logger.info("Appointment updated successfully: {}", id);
-            return dto;
+            return toResponse(appointment);
         } catch (Exception e) {
-            logger.error("Error updating appointment: {}", id, e);
+            log.error("Error updating appointment: {}", id, e);
             throw e;
         }
     }
@@ -188,48 +152,100 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Override
     @Transactional
     public void deleteAppointment(String id) {
-        logger.info("Deleting appointment: {}", id);
         try {
-            Appointment appointment = appointmentRepository.findByIdAndDeletedFalse(id)
-                .orElseThrow(() -> {
-                    logger.warn("Appointment not found with ID: {}", id);
-                    return new ResourceNotFoundException("Appointment not found with id " + id);
-                });
-            
-            appointment.setDeleted(true);
-            appointment.setStatus(AppointmentStatus.CANCELLED);
-            appointmentRepository.save(appointment);
-            logger.debug("Appointment marked as deleted in database: {}", id);
+            Appointment appointment = appointmentRepository.findById(id)
+                    .orElseThrow(() -> new ResourceNotFoundException("Appointment not found with id: " + id));
 
-            if (appointment.getGoogleEventId() != null) {
-                try {
-                    logger.debug("Deleting Google Calendar event for appointment: {}", id);
-                    googleCalendar.events()
-                        .delete(AppConstants.CALENDAR_ID, appointment.getGoogleEventId())
-                        .execute();
-                    logger.info("Google Calendar event deleted successfully for appointment: {}", id);
-                } catch (Exception e) {
-                    logger.error("Failed to delete Google Calendar event for appointment: {}", id, e);
-                    throw new RuntimeException("Failed to delete Google Calendar event", e);
-                }
+            appointment.setStatus(AppointmentStatus.CANCELLED);
+            appointment.setUpdatedAt(LocalDateTime.now());
+            appointmentRepository.save(appointment);
+
+            // Delete Google Calendar event
+            String eventId = googleCalendarService.getEventId(appointment.getId());
+            if (eventId != null) {
+                googleCalendarService.deleteEvent(eventId);
             }
 
-            AppointmentDTO dto = toDTO(appointment);
-            eventPublisher.publishEvent(new AppointmentEvent(this, dto, "CANCELLED"));
-            logger.info("Appointment deleted successfully: {}", id);
+            // Publish appointment cancelled event
+            eventPublisher.publishEvent(new AppointmentCancelledEvent(this, appointment));
         } catch (Exception e) {
-            logger.error("Error deleting appointment: {}", id, e);
+            log.error("Error deleting appointment: {}", id, e);
             throw e;
         }
     }
 
-    private AppointmentDTO toDTO(Appointment appointment) {
-        return AppointmentDTO.builder()
-            .id(appointment.getId())
-            .userId(appointment.getUserId())
-            .doctorId(appointment.getDoctorId())
-            .appointmentDateTime(appointment.getAppointmentDateTime())
-            .status(appointment.getStatus())
-            .build();
+    @Override
+    public Page<AppointmentResponse> getAppointmentsByStatus(AppointmentStatus status, String userId, String entityId, Pageable pageable) {
+        log.debug("Fetching appointments with status: {}, userId: {}, entityId: {}", status, userId, entityId);
+        try {
+            Page<Appointment> page;
+            if (userId != null && entityId != null) {
+                page = appointmentRepository.findAllByStatusAndUserIdAndEntityIdOrderByAppointmentDateTimeDesc(status, userId, entityId, pageable);
+            } else if (userId != null) {
+                page = appointmentRepository.findAllByStatusAndUserIdOrderByAppointmentDateTimeDesc(status, userId, pageable);
+            } else if (entityId != null) {
+                page = appointmentRepository.findAllByStatusAndEntityIdOrderByAppointmentDateTimeDesc(status, entityId, pageable);
+            } else {
+                page = appointmentRepository.findAllByStatusAndDeletedFalseOrderByAppointmentDateTimeDesc(status, pageable);
+            }
+            log.info("Found {} appointments with status: {}", page.getTotalElements(), status);
+            return page.map(this::toResponse);
+        } catch (Exception e) {
+            log.error("Error fetching appointments with status: {}", status, e);
+            throw e;
+        }
     }
-}
+
+    @Override
+    public Page<AppointmentResponse> getDeletedAppointments(String userId, String entityId, Pageable pageable) {
+        log.debug("Fetching deleted appointments with userId: {}, entityId: {}", userId, entityId);
+        try {
+            List<AppointmentStatus> historicalStatuses = Arrays.asList(
+                AppointmentStatus.COMPLETED,
+                AppointmentStatus.CANCELLED
+            );
+
+            Page<Appointment> page;
+            if (userId != null && entityId != null) {
+                page = appointmentRepository.findAllByStatusInAndDeletedTrueAndUserIdAndEntityIdOrderByAppointmentDateTimeDesc(
+                    historicalStatuses, userId, entityId, pageable);
+            } else if (userId != null) {
+                page = appointmentRepository.findAllByStatusInAndDeletedTrueAndUserIdOrderByAppointmentDateTimeDesc(
+                    historicalStatuses, userId, pageable);
+            } else if (entityId != null) {
+                page = appointmentRepository.findAllByStatusInAndDeletedTrueAndEntityIdOrderByAppointmentDateTimeDesc(
+                    historicalStatuses, entityId, pageable);
+            } else {
+                page = appointmentRepository.findAllByStatusInAndDeletedTrueOrderByAppointmentDateTimeDesc(
+                    historicalStatuses, pageable);
+            }
+
+            log.info("Found {} deleted appointments", page.getTotalElements());
+            return page.map(this::toResponse);
+        } catch (Exception e) {
+            log.error("Error fetching deleted appointments", e);
+            throw e;
+        }
+    }
+
+    private AppointmentResponse toResponse(Appointment appointment) {
+        return AppointmentResponse.builder()
+                .id(appointment.getId())
+                .userId(appointment.getUserId())
+                .userEmail(appointment.getUserEmail())
+                .userName(appointment.getUserName())
+                .userPhone(appointment.getUserPhone())
+                .entityId(appointment.getEntityId())
+                .entityEmail(appointment.getEntityEmail())
+                .entityName(appointment.getEntityName())
+                .appointmentDateTime(appointment.getAppointmentDateTime())
+                .isLab(appointment.getIsLab())
+                .testType(appointment.getTestType())
+                .entityType(appointment.getEntityType())
+                .status(appointment.getStatus())
+                .createdAt(appointment.getCreatedAt())
+                .updatedAt(appointment.getUpdatedAt())
+                .deleted(appointment.isDeleted())
+                .build();
+    }
+} 

@@ -1,11 +1,12 @@
-package com.example.healthservice.dto;
+package com.example.healthservice.dto.response;
 
 import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
-public class MedicineRequest {
+public class MedicineResponseDTO {
+    private Long id;
     private String name;
     private String description;
     private BigDecimal price;
@@ -14,4 +15,6 @@ public class MedicineRequest {
     private String category;
     private LocalDateTime expiryDate;
     private String batchNumber;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 } 
