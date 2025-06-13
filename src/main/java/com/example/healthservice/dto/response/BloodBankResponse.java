@@ -1,4 +1,4 @@
-package com.example.healthservice.dto;
+package com.example.healthservice.dto.response;
 
 import com.example.healthservice.enums.BloodType;
 import lombok.*;

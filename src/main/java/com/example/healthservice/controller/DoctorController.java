@@ -1,7 +1,7 @@
 package com.example.healthservice.controller;
 
-import com.example.healthservice.dto.DoctorRequest;
-import com.example.healthservice.dto.DoctorResponse;
+import com.example.healthservice.dto.request.DoctorRequest;
+import com.example.healthservice.dto.response.DoctorResponse;
 import com.example.healthservice.service.DoctorService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

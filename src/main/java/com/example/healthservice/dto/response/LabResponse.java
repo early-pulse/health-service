@@ -1,4 +1,4 @@
-package com.example.healthservice.dto;
+package com.example.healthservice.dto.response;
 
 import lombok.*;
 
@@ -8,8 +8,11 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class LabRequest {
+public class LabResponse {
+    private String id;
     private String name;
     private String address;
+    private double latitude;
+    private double longitude;
     private List<String> testNames;
 }

@@ -1,7 +1,7 @@
 package com.example.healthservice.service;
 
-import com.example.healthservice.dto.MedicineOrderRequest;
-import com.example.healthservice.dto.MedicineOrderResponse;
+import com.example.healthservice.dto.request.MedicineOrderRequest;
+import com.example.healthservice.dto.response.MedicineOrderResponse;
 import com.example.healthservice.enums.OrderStatus;
 import org.springframework.data.domain.Page;
 import java.time.LocalDateTime;

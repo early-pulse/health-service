@@ -1,7 +1,7 @@
 package com.example.healthservice.controller;
 
-import com.example.healthservice.dto.LabRequest;
-import com.example.healthservice.dto.LabResponse;
+import com.example.healthservice.dto.request.LabRequest;
+import com.example.healthservice.dto.response.LabResponse;
 import com.example.healthservice.service.LabService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;

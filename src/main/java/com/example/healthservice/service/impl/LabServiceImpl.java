@@ -1,7 +1,7 @@
 package com.example.healthservice.service.impl;
 
-import com.example.healthservice.dto.LabRequest;
-import com.example.healthservice.dto.LabResponse;
+import com.example.healthservice.dto.request.LabRequest;
+import com.example.healthservice.dto.response.LabResponse;
 import com.example.healthservice.exception.ResourceNotFoundException;
 import com.example.healthservice.model.Lab;
 import com.example.healthservice.repository.LabRepository;

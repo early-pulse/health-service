@@ -1,7 +1,7 @@
 package com.example.healthservice.service;
 
-import com.example.healthservice.dto.BloodBankRequest;
-import com.example.healthservice.dto.BloodBankResponse;
+import com.example.healthservice.dto.request.BloodBankRequest;
+import com.example.healthservice.dto.response.BloodBankResponse;
 
 import java.io.IOException;
 import java.util.List;

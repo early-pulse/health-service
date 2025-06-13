@@ -1,7 +1,7 @@
 package com.example.healthservice.controller;
 
-import com.example.healthservice.dto.BloodBankRequest;
-import com.example.healthservice.dto.BloodBankResponse;
+import com.example.healthservice.dto.request.BloodBankRequest;
+import com.example.healthservice.dto.response.BloodBankResponse;
 import com.example.healthservice.service.BloodBankService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;

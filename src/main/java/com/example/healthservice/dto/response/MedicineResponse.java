@@ -1,12 +1,14 @@
-package com.example.healthservice.dto;
+package com.example.healthservice.dto.response;
 
+import lombok.Builder;
 import lombok.Data;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
-public class MedicineResponseDTO {
-    private Long id;
+@Builder
+public class MedicineResponse {
+    private String id;
     private String name;
     private String description;
     private BigDecimal price;
