@@ -2,6 +2,7 @@ package com.example.healthservice.service.impl;
 
 import com.example.healthservice.dto.request.DoctorRequest;
 import com.example.healthservice.dto.response.DoctorResponse;
+import com.example.healthservice.enums.Specialization;
 import com.example.healthservice.exception.ResourceNotFoundException;
 import com.example.healthservice.model.Doctor;
 import com.example.healthservice.repository.DoctorRepository;
@@ -13,6 +14,8 @@ import org.springframework.data.domain.*;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -23,11 +26,16 @@ public class DoctorServiceImpl implements DoctorService {
 
     @Override
     public DoctorResponse createDoctor(DoctorRequest request) {
-        logger.info("Creating new doctor with name: {}, specialization: {}", 
-            request.getName(), request.getSpecialization());
+        logger.info("Creating new doctor with ID: {}", request.getId());
         
         try {
+            // Check if doctor with ID already exists
+            if (repository.existsById(request.getId())) {
+                throw new IllegalArgumentException("Doctor with ID " + request.getId() + " already exists");
+            }
+
             Doctor doctor = Doctor.builder()
+                .id(request.getId())
                 .name(request.getName())
                 .email(request.getEmail())
                 .phone(request.getPhone())
@@ -41,7 +49,7 @@ public class DoctorServiceImpl implements DoctorService {
             logger.info("Doctor created successfully with ID: {}", savedDoctor.getId());
             return mapToResponse(savedDoctor);
         } catch (Exception e) {
-            logger.error("Error creating doctor with name: {}", request.getName(), e);
+            logger.error("Error creating doctor with ID: {}", request.getId(), e);
             throw e;
         }
     }
@@ -108,6 +116,63 @@ public class DoctorServiceImpl implements DoctorService {
         }
     }
 
+    @Override
+    public DoctorResponse getDoctorById(String id) {
+        logger.debug("Fetching doctor with ID: {}", id);
+        try {
+            Doctor doctor = repository.findById(id)
+                .orElseThrow(() -> {
+                    logger.warn("Doctor not found with ID: {}", id);
+                    return new ResourceNotFoundException("Doctor not found with id " + id);
+                });
+            logger.info("Found doctor: {}", doctor.getName());
+            return mapToResponse(doctor);
+        } catch (Exception e) {
+            logger.error("Error fetching doctor with ID: {}", id, e);
+            throw e;
+        }
+    }
+
+    @Override
+    public List<DoctorResponse> getDoctorsBySpecialization(Specialization specialization) {
+        logger.debug("Fetching doctors with specialization: {}", specialization);
+        try {
+            List<Doctor> doctors = repository.findBySpecializationAndActiveTrue(specialization);
+            logger.info("Found {} doctors with specialization: {}", doctors.size(), specialization);
+            return doctors.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+        } catch (Exception e) {
+            logger.error("Error fetching doctors with specialization: {}", specialization, e);
+            throw e;
+        }
+    }
+
+    @Override
+    public List<DoctorResponse> searchDoctors(String name, Specialization specialization) {
+        logger.debug("Searching doctors with name: {} and specialization: {}", name, specialization);
+        try {
+            List<Doctor> doctors;
+            if (name != null && specialization != null) {
+                doctors = repository.findByNameContainingIgnoreCaseAndSpecializationAndActiveTrue(name, specialization);
+            } else if (name != null) {
+                doctors = repository.findByNameContainingIgnoreCaseAndActiveTrue(name);
+            } else if (specialization != null) {
+                doctors = repository.findBySpecializationAndActiveTrue(specialization);
+            } else {
+                doctors = repository.findByActiveTrue();
+            }
+            
+            logger.info("Found {} doctors matching search criteria", doctors.size());
+            return doctors.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+        } catch (Exception e) {
+            logger.error("Error searching doctors with name: {} and specialization: {}", name, specialization, e);
+            throw e;
+        }
+    }
+
     private DoctorResponse mapToResponse(Doctor doctor) {
         return DoctorResponse.builder()
             .id(doctor.getId())
@@ -115,6 +180,8 @@ public class DoctorServiceImpl implements DoctorService {
             .email(doctor.getEmail())
             .phone(doctor.getPhone())
             .specialization(doctor.getSpecialization())
+            .createdAt(doctor.getCreatedAt())
+            .updatedAt(doctor.getUpdatedAt())
             .build();
     }
 }

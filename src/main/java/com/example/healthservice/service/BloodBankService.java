@@ -13,4 +13,5 @@ public interface BloodBankService {
     BloodBankResponse createBloodBank(BloodBankRequest request) throws IOException, InterruptedException;
     BloodBankResponse updateBloodBank(String id, BloodBankRequest request) throws IOException, InterruptedException;
     void deleteBloodBank(String id);
+    List<BloodBankResponse> searchBloodBanks(String name, String bloodType);
 } 

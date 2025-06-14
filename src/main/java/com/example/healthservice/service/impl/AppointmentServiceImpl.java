@@ -38,6 +38,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Override
     @Transactional
     public AppointmentResponse createAppointment(AppointmentRequest request) {
+        log.debug("Creating appointment for user: {} with entity: {}", request.getUserId(), request.getEntityId());
         try {
             // Validate test type for lab appointments
             if (request.getEntityType() == EntityType.LAB && (request.getTestType() == null || request.getTestType().trim().isEmpty())) {
@@ -53,6 +54,7 @@ public class AppointmentServiceImpl implements AppointmentService {
                     .entityEmail(request.getEntityEmail())
                     .entityName(request.getEntityName())
                     .appointmentDateTime(request.getAppointmentDateTime())
+                    .feedback(request.getFeedback())
                     .isLab(request.getEntityType() == EntityType.LAB)
                     .testType(request.getTestType())
                     .entityType(request.getEntityType())
@@ -63,6 +65,7 @@ public class AppointmentServiceImpl implements AppointmentService {
                     .build();
 
             appointment = appointmentRepository.save(appointment);
+            log.info("Appointment created successfully with ID: {}", appointment.getId());
 
             // Create Google Calendar event
             googleCalendarService.createEvent(appointment);
@@ -128,11 +131,14 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Override
     @Transactional
     public AppointmentResponse updateAppointment(String id, AppointmentRequest request) {
+        log.debug("Updating appointment with ID: {}", id);
         try {
             Appointment appointment = appointmentRepository.findById(id)
                     .orElseThrow(() -> new ResourceNotFoundException("Appointment not found with id: " + id));
 
             appointment.setAppointmentDateTime(request.getAppointmentDateTime());
+            appointment.setFeedback(request.getFeedback());
+            appointment.setStatus(appointment.getStatus());
             appointment.setUpdatedAt(LocalDateTime.now());
             appointment = appointmentRepository.save(appointment);
 
@@ -152,6 +158,7 @@ public class AppointmentServiceImpl implements AppointmentService {
     @Override
     @Transactional
     public void deleteAppointment(String id) {
+        log.debug("Deleting appointment with ID: {}", id);
         try {
             Appointment appointment = appointmentRepository.findById(id)
                     .orElseThrow(() -> new ResourceNotFoundException("Appointment not found with id: " + id));
@@ -239,6 +246,7 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .entityEmail(appointment.getEntityEmail())
                 .entityName(appointment.getEntityName())
                 .appointmentDateTime(appointment.getAppointmentDateTime())
+                .feedback(appointment.getFeedback())
                 .isLab(appointment.getIsLab())
                 .testType(appointment.getTestType())
                 .entityType(appointment.getEntityType())

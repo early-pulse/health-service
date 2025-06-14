@@ -1,6 +1,8 @@
 package com.example.healthservice.repository;
 
 import com.example.healthservice.model.Lab;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.geo.Distance;
 import org.springframework.data.geo.Point;
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -15,4 +17,14 @@ public interface LabRepository extends MongoRepository<Lab, String> {
 
     // Find labs whose testNames list contains the given testName
     List<Lab> findByTestNamesContaining(String testName);
+
+    List<Lab> findByActiveTrue();
+
+    Page<Lab> findAllByActiveTrue(Pageable pageable);
+
+    List<Lab> findByNameContainingIgnoreCaseAndTestNamesContainingAndActiveTrue(String name, String testName);
+
+    List<Lab> findByNameContainingIgnoreCaseAndActiveTrue(String name);
+
+    List<Lab> findByTestNamesContainingAndActiveTrue(String testName);
 }

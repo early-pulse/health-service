@@ -3,6 +3,7 @@ package com.example.healthservice.dto.response;
 import com.example.healthservice.enums.BloodType;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 
 @Data
@@ -20,4 +21,6 @@ public class BloodBankResponse {
     private Map<BloodType, Integer> bloodInventory;
     private String openingTime;
     private String closingTime;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 } 

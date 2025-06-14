@@ -9,6 +9,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 
 import com.example.healthservice.enums.BloodType;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 
 @Data
@@ -35,4 +36,7 @@ public class BloodBank {
     // Operating hours
     private String openingTime;
     private String closingTime;
-} 
+
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
+}

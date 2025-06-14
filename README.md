@@ -382,4 +382,567 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 
 ## Support
 
-For support, please open an issue in the GitHub repository or contact the development team. 
+For support, please open an issue in the GitHub repository or contact the development team.
+
+# Health Service API Documentation
+
+## Base URL
+```
+http://localhost:8080
+```
+
+## Authentication
+Currently, the API does not require authentication.
+
+## API Endpoints
+
+### Blood Banks
+
+#### Get All Blood Banks
+```
+GET /blood-banks
+```
+Response:
+```json
+[
+    {
+        "id": "BB001",
+        "name": "City Blood Bank",
+        "address": "123 Medical Center Drive, City",
+        "phone": "+1234567890",
+        "email": "contact@citybloodbank.com",
+        "latitude": 32.481596,
+        "longitude": -86.4246976,
+        "bloodInventory": {
+            "A_POSITIVE": 50,
+            "B_POSITIVE": 30,
+            "O_POSITIVE": 100,
+            "AB_POSITIVE": 20,
+            "A_NEGATIVE": 25,
+            "B_NEGATIVE": 15,
+            "O_NEGATIVE": 40,
+            "AB_NEGATIVE": 10
+        },
+        "openingTime": "09:00",
+        "closingTime": "18:00",
+        "createdAt": "2024-06-14T10:00:00",
+        "updatedAt": "2024-06-14T10:00:00"
+    }
+]
+```
+
+#### Get Blood Bank by ID
+```
+GET /blood-banks/{id}
+```
+
+#### Create Blood Bank
+```
+POST /blood-banks
+```
+Request Body:
+```json
+{
+    "id": "BB001",
+    "name": "City Blood Bank",
+    "address": "123 Medical Center Drive, City",
+    "phone": "+1234567890",
+    "email": "contact@citybloodbank.com",
+    "bloodInventory": {
+        "A_POSITIVE": 50,
+        "B_POSITIVE": 30,
+        "O_POSITIVE": 100,
+        "AB_POSITIVE": 20,
+        "A_NEGATIVE": 25,
+        "B_NEGATIVE": 15,
+        "O_NEGATIVE": 40,
+        "AB_NEGATIVE": 10
+    },
+    "openingTime": "09:00",
+    "closingTime": "18:00"
+}
+```
+
+#### Update Blood Bank
+```
+PUT /blood-banks/{id}
+```
+Request Body: Same as Create Blood Bank
+
+#### Delete Blood Bank
+```
+DELETE /blood-banks/{id}
+```
+
+#### Get Nearby Blood Banks
+```
+GET /blood-banks/nearby?latitude=32.481596&longitude=-86.4246976&radiusKm=10
+```
+
+#### Search Blood Banks
+```
+GET /blood-banks/search?name=City&bloodType=A_POSITIVE
+```
+
+### Doctors
+
+#### Get All Doctors
+```
+GET /doctors
+```
+Response:
+```json
+[
+    {
+        "id": "DOC001",
+        "name": "Dr. John Smith",
+        "email": "john.smith@hospital.com",
+        "phone": "+1234567890",
+        "specialization": "CARDIOLOGY",
+        "createdAt": "2024-06-14T10:00:00",
+        "updatedAt": "2024-06-14T10:00:00"
+    }
+]
+```
+
+#### Get Doctor by ID
+```
+GET /doctors/{id}
+```
+
+#### Create Doctor
+```
+POST /doctors
+```
+Request Body:
+```json
+{
+    "id": "DOC001",
+    "name": "Dr. John Smith",
+    "email": "john.smith@hospital.com",
+    "phone": "+1234567890",
+    "specialization": "CARDIOLOGY"
+}
+```
+
+#### Update Doctor
+```
+PUT /doctors/{id}
+```
+Request Body: Same as Create Doctor
+
+#### Delete Doctor
+```
+DELETE /doctors/{id}
+```
+
+#### Get Doctors by Specialization
+```
+GET /doctors/specialization/{specialization}
+```
+
+#### Search Doctors
+```
+GET /doctors/search?name=John&specialization=CARDIOLOGY
+```
+
+### Labs
+
+#### Get All Labs
+```
+GET /labs
+```
+Response:
+```json
+[
+    {
+        "id": "LAB001",
+        "name": "City Diagnostic Lab",
+        "address": "123 Medical Center Drive, City",
+        "phone": "+1234567890",
+        "email": "contact@citylab.com",
+        "latitude": 32.481596,
+        "longitude": -86.4246976,
+        "testNames": ["Blood Test", "X-Ray", "MRI"],
+        "openingTime": "09:00",
+        "closingTime": "18:00",
+        "createdAt": "2024-06-14T10:00:00",
+        "updatedAt": "2024-06-14T10:00:00"
+    }
+]
+```
+
+#### Get Lab by ID
+```
+GET /labs/{id}
+```
+
+#### Create Lab
+```
+POST /labs
+```
+Request Body:
+```json
+{
+    "id": "LAB001",
+    "name": "City Diagnostic Lab",
+    "address": "123 Medical Center Drive, City",
+    "phone": "+1234567890",
+    "email": "contact@citylab.com",
+    "testNames": ["Blood Test", "X-Ray", "MRI"],
+    "openingTime": "09:00",
+    "closingTime": "18:00"
+}
+```
+
+#### Update Lab
+```
+PUT /labs/{id}
+```
+Request Body: Same as Create Lab
+
+#### Delete Lab
+```
+DELETE /labs/{id}
+```
+
+#### Get Nearby Labs
+```
+GET /labs/nearby?latitude=32.481596&longitude=-86.4246976&radiusKm=10
+```
+
+#### Search Labs
+```
+GET /labs/search?name=City&testName=Blood Test
+```
+
+### Appointments
+
+#### Get All Appointments
+```
+GET /appointments?userId=USER001&entityId=DOC001&page=0&size=10
+```
+
+#### Get Appointment by ID
+```
+GET /appointments/{id}
+```
+
+#### Create Appointment
+```
+POST /appointments
+```
+Request Body:
+```json
+{
+    "userId": "USER001",
+    "entityId": "DOC001",
+    "entityType": "DOCTOR",
+    "appointmentDateTime": "2024-06-20T10:00:00",
+    "reason": "Regular checkup",
+    "feedback": "Great service!"
+}
+```
+
+#### Update Appointment
+```
+PUT /appointments/{id}
+```
+Request Body: Same as Create Appointment
+
+#### Update Appointment Status
+```
+PUT /appointments/{id}/status
+```
+Request Body:
+```json
+{
+    "status": "CONFIRMED"
+}
+```
+
+#### Update Appointment Feedback
+```
+PUT /appointments/{id}/feedback
+```
+Request Body:
+```json
+"Great service and very professional staff!"
+```
+
+#### Cancel Appointment
+```
+DELETE /appointments/{id}
+```
+
+### Medicines
+
+#### Get All Medicines
+```
+GET /medicines?page=0&size=10
+```
+
+#### Get Medicine by ID
+```
+GET /medicines/{id}
+```
+
+#### Create Medicine
+```
+POST /medicines
+```
+Request Body:
+```json
+{
+    "id": "MED001",
+    "name": "Paracetamol",
+    "category": "PAIN_RELIEF",
+    "description": "Pain relief medicine",
+    "price": 5.99,
+    "manufacturer": "ABC Pharma",
+    "expiryDate": "2025-12-31"
+}
+```
+
+#### Update Medicine
+```
+PUT /medicines/{id}
+```
+Request Body: Same as Create Medicine
+
+#### Delete Medicine
+```
+DELETE /medicines/{id}
+```
+
+## Enums
+
+### BloodType
+- A_POSITIVE
+- B_POSITIVE
+- O_POSITIVE
+- AB_POSITIVE
+- A_NEGATIVE
+- B_NEGATIVE
+- O_NEGATIVE
+- AB_NEGATIVE
+
+### Specialization
+- CARDIOLOGY
+- NEUROLOGY
+- PEDIATRICS
+- DERMATOLOGY
+- ORTHOPEDICS
+- GYNECOLOGY
+- OPHTHALMOLOGY
+- DENTISTRY
+
+### AppointmentStatus
+- PENDING
+- CONFIRMED
+- CANCELLED
+- COMPLETED
+
+### MedicineCategory
+- PAIN_RELIEF
+- ANTIBIOTICS
+- VITAMINS
+- ANTACIDS
+- ANTIHISTAMINES
+- ANTIHYPERTENSIVES
+- ANTIDIABETICS
+- OTHER
+
+## Error Responses
+
+### 400 Bad Request
+```json
+{
+    "timestamp": "2024-06-14T10:00:00",
+    "status": 400,
+    "error": "Bad Request",
+    "message": "Invalid request parameters"
+}
+```
+
+### 404 Not Found
+```json
+{
+    "timestamp": "2024-06-14T10:00:00",
+    "status": 404,
+    "error": "Not Found",
+    "message": "Resource not found"
+}
+```
+
+### 500 Internal Server Error
+```json
+{
+    "timestamp": "2024-06-14T10:00:00",
+    "status": 500,
+    "error": "Internal Server Error",
+    "message": "An unexpected error occurred"
+}
+```
+
+## Request Combinations
+
+### Blood Banks
+1. Search by name only:
+```
+GET /blood-banks/search?name=City
+```
+
+2. Search by blood type only:
+```
+GET /blood-banks/search?bloodType=A_POSITIVE
+```
+
+3. Search by both name and blood type:
+```
+GET /blood-banks/search?name=City&bloodType=A_POSITIVE
+```
+
+4. Get nearby blood banks with different radius:
+```
+GET /blood-banks/nearby?latitude=32.481596&longitude=-86.4246976&radiusKm=5
+GET /blood-banks/nearby?latitude=32.481596&longitude=-86.4246976&radiusKm=10
+GET /blood-banks/nearby?latitude=32.481596&longitude=-86.4246976&radiusKm=20
+```
+
+### Doctors
+1. Search by name only:
+```
+GET /doctors/search?name=John
+```
+
+2. Search by specialization only:
+```
+GET /doctors/specialization/CARDIOLOGY
+```
+
+3. Search by both name and specialization:
+```
+GET /doctors/search?name=John&specialization=CARDIOLOGY
+```
+
+### Labs
+1. Search by name only:
+```
+GET /labs/search?name=City
+```
+
+2. Search by test name only:
+```
+GET /labs/search?testName=Blood Test
+```
+
+3. Search by both name and test name:
+```
+GET /labs/search?name=City&testName=Blood Test
+```
+
+4. Get nearby labs with different radius:
+```
+GET /labs/nearby?latitude=32.481596&longitude=-86.4246976&radiusKm=5
+GET /labs/nearby?latitude=32.481596&longitude=-86.4246976&radiusKm=10
+GET /labs/nearby?latitude=32.481596&longitude=-86.4246976&radiusKm=20
+```
+
+### Appointments
+1. Get all appointments with pagination:
+```
+GET /appointments?page=0&size=10
+```
+
+2. Get appointments by user:
+```
+GET /appointments?userId=USER001&page=0&size=10
+```
+
+3. Get appointments by entity:
+```
+GET /appointments?entityId=DOC001&page=0&size=10
+```
+
+4. Get appointments by both user and entity:
+```
+GET /appointments?userId=USER001&entityId=DOC001&page=0&size=10
+```
+
+5. Create appointment with different entity types:
+```json
+// Doctor appointment
+{
+    "userId": "USER001",
+    "entityId": "DOC001",
+    "entityType": "DOCTOR",
+    "appointmentDateTime": "2024-06-20T10:00:00",
+    "reason": "Regular checkup",
+    "feedback": "Great service!"
+}
+
+// Lab appointment
+{
+    "userId": "USER001",
+    "entityId": "LAB001",
+    "entityType": "LAB",
+    "appointmentDateTime": "2024-06-20T10:00:00",
+    "reason": "Blood test",
+    "feedback": "Efficient service!"
+}
+```
+
+6. Update appointment status:
+```json
+// Confirm appointment
+{
+    "status": "CONFIRMED"
+}
+
+// Cancel appointment
+{
+    "status": "CANCELLED"
+}
+
+// Complete appointment
+{
+    "status": "COMPLETED"
+}
+```
+
+### Medicines
+1. Get all medicines with pagination:
+```
+GET /medicines?page=0&size=10
+```
+
+2. Get medicines by category:
+```
+GET /medicines?category=PAIN_RELIEF&page=0&size=10
+```
+
+3. Create medicine with different categories:
+```json
+// Pain relief medicine
+{
+    "id": "MED001",
+    "name": "Paracetamol",
+    "category": "PAIN_RELIEF",
+    "description": "Pain relief medicine",
+    "price": 5.99,
+    "manufacturer": "ABC Pharma",
+    "expiryDate": "2025-12-31"
+}
+
+// Antibiotic medicine
+{
+    "id": "MED002",
+    "name": "Amoxicillin",
+    "category": "ANTIBIOTICS",
+    "description": "Antibiotic medicine",
+    "price": 15.99,
+    "manufacturer": "XYZ Pharma",
+    "expiryDate": "2025-12-31"
+}
+``` 

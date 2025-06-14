@@ -17,6 +17,7 @@ import org.springframework.data.mongodb.core.geo.GeoJsonPoint;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -81,10 +82,16 @@ public class BloodBankServiceImpl implements BloodBankService {
 
     @Override
     public BloodBankResponse createBloodBank(BloodBankRequest request) throws IOException, InterruptedException {
-        logger.info("Creating new blood bank: {}", request.getName());
+        logger.info("Creating new blood bank with ID: {}", request.getId());
         try {
+            // Check if blood bank with ID already exists
+            if (bloodBankRepository.existsById(request.getId())) {
+                throw new IllegalArgumentException("Blood bank with ID " + request.getId() + " already exists");
+            }
+
             GeoJsonPoint point = geoCodingService.geocode(request.getAddress());
             BloodBank bloodBank = BloodBank.builder()
+                    .id(request.getId())
                     .name(request.getName())
                     .address(request.getAddress())
                     .phone(request.getPhone())
@@ -94,13 +101,15 @@ public class BloodBankServiceImpl implements BloodBankService {
                     .closingTime(request.getClosingTime())
                     .active(true)
                     .location(point)
+                    .createdAt(LocalDateTime.now())
+                    .updatedAt(LocalDateTime.now())
                     .build();
 
             BloodBank saved = bloodBankRepository.save(bloodBank);
             logger.info("Blood bank created successfully with ID: {}", saved.getId());
             return mapToResponse(saved);
         } catch (Exception e) {
-            logger.error("Error creating blood bank: {}", request.getName(), e);
+            logger.error("Error creating blood bank with ID: {}", request.getId(), e);
             throw e;
         }
     }
@@ -122,6 +131,7 @@ public class BloodBankServiceImpl implements BloodBankService {
             existing.setBloodInventory(request.getBloodInventory());
             existing.setOpeningTime(request.getOpeningTime());
             existing.setClosingTime(request.getClosingTime());
+            existing.setUpdatedAt(LocalDateTime.now());
             
             // Re-geocode if address changed
             if (!existing.getAddress().equals(request.getAddress())) {
@@ -148,10 +158,36 @@ public class BloodBankServiceImpl implements BloodBankService {
                         return new ResourceNotFoundException("Blood bank not found with id " + id);
                     });
             existing.setActive(false);
+            existing.setUpdatedAt(LocalDateTime.now());
             bloodBankRepository.save(existing);
             logger.info("Blood bank deleted successfully with ID: {}", id);
         } catch (Exception e) {
             logger.error("Error deleting blood bank with ID: {}", id, e);
+            throw e;
+        }
+    }
+
+    @Override
+    public List<BloodBankResponse> searchBloodBanks(String name, String bloodType) {
+        logger.debug("Searching blood banks with name: {} and bloodType: {}", name, bloodType);
+        try {
+            List<BloodBank> bloodBanks;
+            if (name != null && bloodType != null) {
+                bloodBanks = bloodBankRepository.findByNameAndBloodTypeAndActiveTrue(name, bloodType);
+            } else if (name != null) {
+                bloodBanks = bloodBankRepository.findByNameContainingIgnoreCaseAndActiveTrue(name);
+            } else if (bloodType != null) {
+                bloodBanks = bloodBankRepository.findByBloodTypeAndActiveTrue(bloodType);
+            } else {
+                bloodBanks = bloodBankRepository.findByActiveTrue();
+            }
+            
+            logger.info("Found {} blood banks matching search criteria", bloodBanks.size());
+            return bloodBanks.stream()
+                .map(this::mapToResponse)
+                .collect(Collectors.toList());
+        } catch (Exception e) {
+            logger.error("Error searching blood banks with name: {} and bloodType: {}", name, bloodType, e);
             throw e;
         }
     }

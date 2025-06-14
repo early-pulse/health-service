@@ -14,4 +14,5 @@ public interface LabService {
     LabResponse createLab(LabRequest labRequest) throws IOException, InterruptedException;
     LabResponse updateLab(String labId, LabRequest labRequest) throws IOException, InterruptedException;
     void deleteLab(String labId);
+    List<LabResponse> searchLabs(String name, String testName);
 }

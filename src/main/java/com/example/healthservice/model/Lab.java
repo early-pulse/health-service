@@ -7,6 +7,7 @@ import org.springframework.data.mongodb.core.index.GeoSpatialIndexType;
 import org.springframework.data.mongodb.core.index.GeoSpatialIndexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Data
@@ -20,9 +21,15 @@ public class Lab {
 
     private String name;
     private String address;
+    private String email;
+    private String phone;
 
     @GeoSpatialIndexed(type = GeoSpatialIndexType.GEO_2DSPHERE)
     private GeoJsonPoint location;  // GeoJSON point (longitude=x, latitude=y)
 
     private List<String> testNames; // supported test names
+
+    private boolean active;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

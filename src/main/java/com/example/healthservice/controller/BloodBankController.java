@@ -3,6 +3,7 @@ package com.example.healthservice.controller;
 import com.example.healthservice.dto.request.BloodBankRequest;
 import com.example.healthservice.dto.response.BloodBankResponse;
 import com.example.healthservice.service.BloodBankService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,23 +23,11 @@ public class BloodBankController {
     private final BloodBankService bloodBankService;
 
     @GetMapping
-    public ResponseEntity<List<BloodBankResponse>> getBloodBanks(
-            @RequestParam(required = false) Double latitude,
-            @RequestParam(required = false) Double longitude,
-            @RequestParam(required = false) Double radius) {
-
-        if (latitude != null && longitude != null && radius != null) {
-            logger.info("GET /blood-banks - Fetching blood banks by location - lat: {}, lng: {}, radius: {}", 
-                latitude, longitude, radius);
-            List<BloodBankResponse> response = bloodBankService.getBloodBanksByLocation(latitude, longitude, radius);
-            logger.info("Retrieved {} blood banks in the specified location", response.size());
-            return ResponseEntity.ok(response);
-        } else {
-            logger.info("GET /blood-banks - Fetching all blood banks");
-            List<BloodBankResponse> response = bloodBankService.getAllBloodBanks();
-            logger.info("Retrieved {} blood banks", response.size());
-            return ResponseEntity.ok(response);
-        }
+    public ResponseEntity<List<BloodBankResponse>> getAllBloodBanks() {
+        logger.info("GET /blood-banks - Fetching all blood banks");
+        List<BloodBankResponse> response = bloodBankService.getAllBloodBanks();
+        logger.info("Retrieved {} blood banks", response.size());
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{id}")
@@ -51,7 +40,7 @@ public class BloodBankController {
     }
 
     @PostMapping
-    public ResponseEntity<BloodBankResponse> createBloodBank(@RequestBody BloodBankRequest request) throws IOException, InterruptedException {
+    public ResponseEntity<BloodBankResponse> createBloodBank(@Valid @RequestBody BloodBankRequest request) throws IOException, InterruptedException {
         logger.info("POST /blood-banks - Creating new blood bank");
         logger.debug("Blood bank request details - name: {}, address: {}, phone: {}", 
             request.getName(), request.getAddress(), request.getPhone());
@@ -62,9 +51,7 @@ public class BloodBankController {
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<BloodBankResponse> updateBloodBank(
-            @PathVariable String id, 
-            @RequestBody BloodBankRequest request) throws IOException, InterruptedException {
+    public ResponseEntity<BloodBankResponse> updateBloodBank(@PathVariable String id, @Valid @RequestBody BloodBankRequest request) throws IOException, InterruptedException {
         logger.info("PUT /blood-banks/{} - Updating blood bank", id);
         logger.debug("Update request details - name: {}, address: {}, phone: {}", 
             request.getName(), request.getAddress(), request.getPhone());
@@ -81,5 +68,28 @@ public class BloodBankController {
         bloodBankService.deleteBloodBank(id);
         logger.info("Successfully deleted blood bank with ID: {}", id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/nearby")
+    public ResponseEntity<List<BloodBankResponse>> getBloodBanksByLocation(
+            @RequestParam double latitude,
+            @RequestParam double longitude,
+            @RequestParam double radiusKm) {
+        logger.info("GET /blood-banks/nearby - Fetching blood banks by location - lat: {}, lng: {}, radius: {}", 
+            latitude, longitude, radiusKm);
+        List<BloodBankResponse> response = bloodBankService.getBloodBanksByLocation(latitude, longitude, radiusKm);
+        logger.info("Retrieved {} blood banks in the specified location", response.size());
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<BloodBankResponse>> searchBloodBanks(
+            @RequestParam(required = false) String name,
+            @RequestParam(required = false) String bloodType) {
+        logger.info("GET /blood-banks/search - Searching blood banks - name: {}, bloodType: {}", 
+            name, bloodType);
+        List<BloodBankResponse> response = bloodBankService.searchBloodBanks(name, bloodType);
+        logger.info("Retrieved {} blood banks matching the search criteria", response.size());
+        return ResponseEntity.ok(response);
     }
 } 

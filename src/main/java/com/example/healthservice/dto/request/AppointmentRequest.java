@@ -51,4 +51,7 @@ public class AppointmentRequest {
     private EntityType entityType;
 
     private String testType;  // Required for lab appointments
+
+    private String reason;
+    private String feedback;
 } 

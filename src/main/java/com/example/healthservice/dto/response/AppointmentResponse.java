@@ -26,6 +26,8 @@ public class AppointmentResponse {
     private String testType;
     private EntityType entityType;
     private AppointmentStatus status;
+    private String reason;
+    private String feedback;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private boolean deleted;

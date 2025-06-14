@@ -3,21 +3,29 @@ package com.example.healthservice.dto.request;
 import com.example.healthservice.enums.Specialization;
 import jakarta.validation.constraints.*;
 import lombok.*;
+import java.time.LocalDateTime;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 public class DoctorRequest {
-    @NotBlank
+    @NotBlank(message = "ID is required")
+    private String id;
+
+    @NotBlank(message = "Name is required")
     private String name;
 
-    @Email
-    @NotBlank
+    @Email(message = "Invalid email format")
+    @NotBlank(message = "Email is required")
     private String email;
 
-    @NotBlank
+    @NotBlank(message = "Phone is required")
     private String phone;
 
-    @NotNull
+    @NotNull(message = "Specialization is required")
     private Specialization specialization;
+    
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }
