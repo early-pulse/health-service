@@ -1,9 +1,14 @@
 package com.example.healthservice.enums;
 
 public enum Specialization {
-    GENERAL_PHYSICIAN,
-    DERMATOLOGIST,
-    CARDIOLOGIST,
-    ORTHOPEDIC,
-    NEUROLOGIST
+    CARDIOLOGY,
+    DERMATOLOGY,
+    ENDOCRINOLOGY,
+    GASTROENTEROLOGY,
+    NEUROLOGY,
+    OPHTHALMOLOGY,
+    ORTHOPEDICS,
+    PEDIATRICS,
+    PSYCHIATRY,
+    UROLOGY
 }
