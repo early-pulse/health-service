@@ -62,6 +62,7 @@ public class AppointmentServiceImpl implements AppointmentService {
                     .createdAt(LocalDateTime.now())
                     .updatedAt(LocalDateTime.now())
                     .deleted(false)
+                    .reason(request.getReason())
                     .build();
 
             appointment = appointmentRepository.save(appointment);
