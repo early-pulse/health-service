@@ -31,6 +31,7 @@ public class Appointment {
     private EntityType entityType;
     private AppointmentStatus status;
     private String feedback;
+    private String reason;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String googleEventId;

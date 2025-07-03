@@ -140,6 +140,7 @@ public class AppointmentServiceImpl implements AppointmentService {
             appointment.setFeedback(request.getFeedback());
             appointment.setStatus(request.getStatus());
             appointment.setUpdatedAt(LocalDateTime.now());
+            appointment.setReason(request.getReason());
             appointment = appointmentRepository.save(appointment);
 
             // Update Google Calendar event
@@ -254,6 +255,7 @@ public class AppointmentServiceImpl implements AppointmentService {
                 .createdAt(appointment.getCreatedAt())
                 .updatedAt(appointment.getUpdatedAt())
                 .deleted(appointment.isDeleted())
+                .reason(appointment.getReason())
                 .build();
     }
 } 
