@@ -14,10 +14,10 @@ public class LabResponse {
     private String name;
     private String address;
     private String email;
-    private String phone;
+    private String phoneNumber;
     private double latitude;
     private double longitude;
-    private List<String> testNames;
+    private List<String> testsOffered;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

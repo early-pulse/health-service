@@ -38,7 +38,8 @@ public class DoctorServiceImpl implements DoctorService {
                 .id(request.getId())
                 .name(request.getName())
                 .email(request.getEmail())
-                .phone(request.getPhone())
+                .phoneNumber(request.getPhoneNumber())
+                .address(request.getAddress())
                 .specialization(request.getSpecialization())
                 .active(true)
                 .createdAt(LocalDateTime.now())
@@ -67,7 +68,8 @@ public class DoctorServiceImpl implements DoctorService {
             
             doctor.setName(request.getName());
             doctor.setEmail(request.getEmail());
-            doctor.setPhone(request.getPhone());
+            doctor.setPhoneNumber(request.getPhoneNumber());
+            doctor.setAddress(request.getAddress());
             doctor.setSpecialization(request.getSpecialization());
             doctor.setUpdatedAt(LocalDateTime.now());
             
@@ -107,7 +109,7 @@ public class DoctorServiceImpl implements DoctorService {
         
         try {
             Pageable pageable = PageRequest.of(page, size, Sort.by("name").ascending());
-            Page<Doctor> doctorPage = repository.findAllByActiveTrue(pageable);
+            Page<Doctor> doctorPage = repository.findAll(pageable);
             logger.info("Found {} doctors", doctorPage.getTotalElements());
             return doctorPage.map(this::mapToResponse);
         } catch (Exception e) {
@@ -137,7 +139,7 @@ public class DoctorServiceImpl implements DoctorService {
     public List<DoctorResponse> getDoctorsBySpecialization(Specialization specialization) {
         logger.debug("Fetching doctors with specialization: {}", specialization);
         try {
-            List<Doctor> doctors = repository.findBySpecializationAndActiveTrue(specialization);
+            List<Doctor> doctors = repository.findBySpecialization(specialization);
             logger.info("Found {} doctors with specialization: {}", doctors.size(), specialization);
             return doctors.stream()
                 .map(this::mapToResponse)
@@ -154,13 +156,13 @@ public class DoctorServiceImpl implements DoctorService {
         try {
             List<Doctor> doctors;
             if (name != null && specialization != null) {
-                doctors = repository.findByNameContainingIgnoreCaseAndSpecializationAndActiveTrue(name, specialization);
+                doctors = repository.findByNameContainingIgnoreCaseAndSpecialization(name, specialization);
             } else if (name != null) {
-                doctors = repository.findByNameContainingIgnoreCaseAndActiveTrue(name);
+                doctors = repository.findByNameContainingIgnoreCase(name);
             } else if (specialization != null) {
-                doctors = repository.findBySpecializationAndActiveTrue(specialization);
+                doctors = repository.findBySpecialization(specialization);
             } else {
-                doctors = repository.findByActiveTrue();
+                doctors = repository.findAll();
             }
             
             logger.info("Found {} doctors matching search criteria", doctors.size());
@@ -178,8 +180,11 @@ public class DoctorServiceImpl implements DoctorService {
             .id(doctor.getId())
             .name(doctor.getName())
             .email(doctor.getEmail())
-            .phone(doctor.getPhone())
+            .phoneNumber(doctor.getPhoneNumber())
+            .address(doctor.getAddress())
             .specialization(doctor.getSpecialization())
+            .latitude(doctor.getCoordinates() != null ? doctor.getCoordinates().getY() : 0.0)
+            .longitude(doctor.getCoordinates() != null ? doctor.getCoordinates().getX() : 0.0)
             .createdAt(doctor.getCreatedAt())
             .updatedAt(doctor.getUpdatedAt())
             .build();

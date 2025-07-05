@@ -22,12 +22,12 @@ public class Lab {
     private String name;
     private String address;
     private String email;
-    private String phone;
+    private String phoneNumber;
 
     @GeoSpatialIndexed(type = GeoSpatialIndexType.GEO_2DSPHERE)
-    private GeoJsonPoint location;  // GeoJSON point (longitude=x, latitude=y)
+    private GeoJsonPoint coordinates;  // GeoJSON point (longitude=x, latitude=y)
 
-    private List<String> testNames; // supported test names
+    private List<String> testsOffered; // supported test names
 
     private boolean active;
     private LocalDateTime createdAt;

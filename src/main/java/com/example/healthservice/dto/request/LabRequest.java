@@ -24,10 +24,10 @@ public class LabRequest {
     @NotBlank(message = "Email is required")
     private String email;
     
-    @NotBlank(message = "Phone is required")
-    private String phone;
+    @NotBlank(message = "Phone number is required")
+    private String phoneNumber;
     
-    private List<String> testNames;
+    private List<String> testsOffered;
     
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

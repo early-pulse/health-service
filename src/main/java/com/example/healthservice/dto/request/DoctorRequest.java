@@ -20,8 +20,11 @@ public class DoctorRequest {
     @NotBlank(message = "Email is required")
     private String email;
 
-    @NotBlank(message = "Phone is required")
-    private String phone;
+    @NotBlank(message = "Phone number is required")
+    private String phoneNumber;
+
+    @NotBlank(message = "Address is required")
+    private String address;
 
     @NotNull(message = "Specialization is required")
     private Specialization specialization;

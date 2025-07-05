@@ -13,18 +13,16 @@ import java.util.List;
 @Repository
 public interface LabRepository extends MongoRepository<Lab, String> {
     // Find labs within given distance of a point (uses MongoDB $near query)
-    List<Lab> findByLocationNear(Point location, Distance distance);
+    List<Lab> findByCoordinatesNear(Point location, Distance distance);
 
-    // Find labs whose testNames list contains the given testName
-    List<Lab> findByTestNamesContaining(String testName);
+    // Find labs whose testsOffered list contains the given testName
+    List<Lab> findByTestsOfferedContaining(String testName);
 
-    List<Lab> findByActiveTrue();
+    List<Lab> findAll();
 
-    Page<Lab> findAllByActiveTrue(Pageable pageable);
+    Page<Lab> findAll(Pageable pageable);
 
-    List<Lab> findByNameContainingIgnoreCaseAndTestNamesContainingAndActiveTrue(String name, String testName);
+    List<Lab> findByNameContainingIgnoreCaseAndTestsOfferedContaining(String name, String testName);
 
-    List<Lab> findByNameContainingIgnoreCaseAndActiveTrue(String name);
-
-    List<Lab> findByTestNamesContainingAndActiveTrue(String testName);
+    List<Lab> findByNameContainingIgnoreCase(String name);
 }

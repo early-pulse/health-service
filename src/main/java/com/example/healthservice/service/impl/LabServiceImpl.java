@@ -33,7 +33,7 @@ public class LabServiceImpl implements LabService {
     public List<LabResponse> getAllLabs() {
         logger.debug("Fetching all labs");
         try {
-            List<Lab> labs = labRepository.findByActiveTrue();
+            List<Lab> labs = labRepository.findAll();
             logger.info("Found {} labs", labs.size());
             return labs.stream()
                     .map(this::mapToResponse)
@@ -50,7 +50,7 @@ public class LabServiceImpl implements LabService {
         try {
             Point location = new Point(longitude, latitude);
             Distance distance = new Distance(radiusKm, Metrics.KILOMETERS);
-            List<Lab> labs = labRepository.findByLocationNear(location, distance);
+            List<Lab> labs = labRepository.findByCoordinatesNear(location, distance);
             logger.info("Found {} labs within {}km of location", labs.size(), radiusKm);
             return labs.stream()
                     .map(this::mapToResponse)
@@ -66,7 +66,7 @@ public class LabServiceImpl implements LabService {
     public List<LabResponse> getLabsByTestName(String testName) {
         logger.debug("Fetching labs offering test: {}", testName);
         try {
-            List<Lab> labs = labRepository.findByTestNamesContaining(testName);
+            List<Lab> labs = labRepository.findByTestsOfferedContaining(testName);
             logger.info("Found {} labs offering test: {}", labs.size(), testName);
             return labs.stream()
                     .map(this::mapToResponse)
@@ -109,10 +109,10 @@ public class LabServiceImpl implements LabService {
                     .name(request.getName())
                     .address(request.getAddress())
                     .email(request.getEmail())
-                    .phone(request.getPhone())
-                    .testNames(request.getTestNames())
+                    .phoneNumber(request.getPhoneNumber())
+                    .testsOffered(request.getTestsOffered())
                     .active(true)
-                    .location(point)
+                    .coordinates(point)
                     .createdAt(LocalDateTime.now())
                     .updatedAt(LocalDateTime.now())
                     .build();
@@ -139,14 +139,14 @@ public class LabServiceImpl implements LabService {
             existing.setName(request.getName());
             existing.setAddress(request.getAddress());
             existing.setEmail(request.getEmail());
-            existing.setPhone(request.getPhone());
-            existing.setTestNames(request.getTestNames());
+            existing.setPhoneNumber(request.getPhoneNumber());
+            existing.setTestsOffered(request.getTestsOffered());
             existing.setUpdatedAt(LocalDateTime.now());
             
             // Re-geocode if address changed
             if (!existing.getAddress().equals(request.getAddress())) {
                 GeoJsonPoint point = geoCodingService.geocode(request.getAddress());
-                existing.setLocation(point);
+                existing.setCoordinates(point);
             }
             
             Lab updated = labRepository.save(existing);
@@ -183,13 +183,13 @@ public class LabServiceImpl implements LabService {
         try {
             List<Lab> labs;
             if (name != null && testName != null) {
-                labs = labRepository.findByNameContainingIgnoreCaseAndTestNamesContainingAndActiveTrue(name, testName);
+                labs = labRepository.findByNameContainingIgnoreCaseAndTestsOfferedContaining(name, testName);
             } else if (name != null) {
-                labs = labRepository.findByNameContainingIgnoreCaseAndActiveTrue(name);
+                labs = labRepository.findByNameContainingIgnoreCase(name);
             } else if (testName != null) {
-                labs = labRepository.findByTestNamesContainingAndActiveTrue(testName);
+                labs = labRepository.findByTestsOfferedContaining(testName);
             } else {
-                labs = labRepository.findByActiveTrue();
+                labs = labRepository.findAll();
             }
             
             logger.info("Found {} labs matching search criteria", labs.size());
@@ -208,10 +208,10 @@ public class LabServiceImpl implements LabService {
                 .name(lab.getName())
                 .address(lab.getAddress())
                 .email(lab.getEmail())
-                .phone(lab.getPhone())
-                .latitude(lab.getLocation().getY())
-                .longitude(lab.getLocation().getX())
-                .testNames(lab.getTestNames())
+                .phoneNumber(lab.getPhoneNumber())
+                .latitude(lab.getCoordinates().getY())
+                .longitude(lab.getCoordinates().getX())
+                .testsOffered(lab.getTestsOffered())
                 .createdAt(lab.getCreatedAt())
                 .updatedAt(lab.getUpdatedAt())
                 .build();

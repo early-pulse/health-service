@@ -11,9 +11,9 @@ import java.util.List;
 
 @Repository
 public interface DoctorRepository extends MongoRepository<Doctor, String> {
-    Page<Doctor> findAllByActiveTrue(Pageable pageable);
-    List<Doctor> findBySpecializationAndActiveTrue(Specialization specialization);
-    List<Doctor> findByNameContainingIgnoreCaseAndSpecializationAndActiveTrue(String name, Specialization specialization);
-    List<Doctor> findByNameContainingIgnoreCaseAndActiveTrue(String name);
-    List<Doctor> findByActiveTrue();
+    Page<Doctor> findAll(Pageable pageable);
+    List<Doctor> findBySpecialization(Specialization specialization);
+    List<Doctor> findByNameContainingIgnoreCaseAndSpecialization(String name, Specialization specialization);
+    List<Doctor> findByNameContainingIgnoreCase(String name);
+    List<Doctor> findAll();
 }

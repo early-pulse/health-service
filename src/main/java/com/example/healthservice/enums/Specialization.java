@@ -1,6 +1,7 @@
 package com.example.healthservice.enums;
 
 public enum Specialization {
+    Cardiologist,
     CARDIOLOGIST,
     DERMATOLOGIST,
     ENDOCRINOLOGIST,

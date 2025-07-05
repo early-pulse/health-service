@@ -13,8 +13,11 @@ public class DoctorResponse {
     private String id;
     private String name;
     private String email;
-    private String phone;
+    private String phoneNumber;
+    private String address;
     private Specialization specialization;
+    private double latitude;
+    private double longitude;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
 }

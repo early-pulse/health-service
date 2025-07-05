@@ -45,8 +45,8 @@ public class LabController {
 //    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<LabResponse> createLab(@Valid @RequestBody LabRequest request) throws IOException, InterruptedException {
         logger.info("POST /labs - Creating new lab");
-        logger.debug("Lab request details - name: {}, address: {}, testNames: {}", 
-            request.getName(), request.getAddress(), request.getTestNames());
+                logger.debug("Lab request details - name: {}, address: {}, testsOffered: {}",
+            request.getName(), request.getAddress(), request.getTestsOffered());
         
         LabResponse response = labService.createLab(request);
         logger.info("Successfully created lab with ID: {}", response.getId());
@@ -57,8 +57,8 @@ public class LabController {
 //    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<LabResponse> updateLab(@PathVariable String id, @Valid @RequestBody LabRequest request) throws IOException, InterruptedException {
         logger.info("PUT /labs/{} - Updating lab", id);
-        logger.debug("Update request details - name: {}, address: {}, testNames: {}", 
-            request.getName(), request.getAddress(), request.getTestNames());
+                logger.debug("Update request details - name: {}, address: {}, testsOffered: {}",
+            request.getName(), request.getAddress(), request.getTestsOffered());
         
         LabResponse response = labService.updateLab(id, request);
         logger.info("Successfully updated lab with ID: {}", id);

@@ -69,7 +69,7 @@ public class MongoConfig implements ApplicationListener<ContextRefreshedEvent> {
         // Explicitly create geospatial indexes for collections that need them
         logger.debug("Creating geospatial indexes for specific collections");
         createGeoSpatialIndex("bloodBanks", "location");
-        createGeoSpatialIndex("labs", "location");
+        createGeoSpatialIndex("labs", "coordinates");
     }
 
     private void createGeoSpatialIndex(String collectionName, String fieldName) {
